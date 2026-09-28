@@ -1,0 +1,19 @@
+#!/bin/sh /etc/rc.common
+# Re-apply Q11 Freedom per-device speed limits at boot.
+# Installed as /etc/init.d/freedom-qos
+START=95
+STOP=10
+
+start() {
+  config_load freedom
+  # iterate freedom.qos_* sections { ip, down }
+  for sec in $(uci -q show freedom | sed -n "s/^freedom\.\(qos_[^.]*\)=qos$/\1/p"); do
+    ip=$(uci -q get "freedom.$sec.ip")
+    down=$(uci -q get "freedom.$sec.down")
+    [ -n "$ip" ] && [ -n "$down" ] && /usr/sbin/freedom-qos.sh "$ip" "$down"
+  done
+}
+
+stop() {
+  tc qdisc del dev br-lan root 2>/dev/null
+}

@@ -1,0 +1,30 @@
+#!/bin/sh
+# ============================================================================
+# Q11 Freedom - remembers the DHCP hostname of every device.
+# Lives at /etc/hotplug.d/dhcp/50-freedom-names (only useful on the master,
+# which is the only node running DHCP). dnsmasq calls it for every new or
+# renewed lease (ACTION=add|update, MACADDR, IPADDR, HOSTNAME) and, at startup,
+# for every lease it already had.
+#
+# Why: leases live in RAM (/tmp/dhcp.leases) and are wiped on reboot. A device
+# that keeps its IP does not ask for it again and would show up without a name
+# in the app. This stores MAC -> name in flash (/etc/freedom-hosts) and ONLY
+# writes when a new device appears or its name changes.
+# ============================================================================
+[ "$ACTION" = add ] || [ "$ACTION" = update ] || exit 0
+case "$HOSTNAME" in '' | '*') exit 0 ;; esac
+
+MAC=$(printf '%s' "$MACADDR" | tr 'a-f' 'A-F')
+echo "$MAC" | grep -qE '^([0-9A-F]{2}:){5}[0-9A-F]{2}$' || exit 0
+# hostname characters only: nothing to escape when returning it as JSON
+NAME=$(printf '%s' "$HOSTNAME" | tr -cd 'A-Za-z0-9._-' | cut -c1-63)
+[ -n "$NAME" ] || exit 0
+
+# hotplug-call sources this with "." inside a subshell: exit only leaves this file
+F=/etc/freedom-hosts
+grep -qx "$MAC $NAME" "$F" 2>/dev/null && exit 0     # already known: don't touch flash
+
+exec 9>/tmp/freedom-hosts.lock; flock 9
+
+# replace the line for this MAC; keep the 500 most recent
+{ grep -v "^$MAC " "$F" 2>/dev/null; echo "$MAC $NAME"; } | tail -n 500 > "$F.tmp" && mv -f "$F.tmp" "$F"

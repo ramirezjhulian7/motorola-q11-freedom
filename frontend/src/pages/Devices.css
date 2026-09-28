@@ -1,0 +1,49 @@
+.dev-filters { display: flex; flex-direction: column; gap: var(--sp-3); }
+.search {
+  display: flex; align-items: center; gap: var(--sp-2);
+  background: var(--color-muted); border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); padding: 0 12px; color: var(--color-muted-fg);
+}
+.search:focus-within { border-color: var(--color-accent); }
+.search input { border: 0; background: transparent; padding: 11px 0; }
+.search input:focus { outline: none; }
+.dev-filter-row { display: flex; gap: var(--sp-2); flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.node-select { width: auto; min-width: 170px; padding: 8px 12px; font-size: 14px; }
+
+.dev-cards { display: grid; gap: var(--sp-3); grid-template-columns: 1fr; }
+@media (min-width: 900px) { .dev-cards { grid-template-columns: 1fr 1fr; } }
+.dev-card {
+  border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+  padding: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2);
+  transition: border-color var(--dur) var(--ease-out);
+  min-width: 0;
+}
+.dev-card:hover { border-color: var(--color-secondary); }
+.dev-card.paused { border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.04); }
+.dev-card.idle { opacity: .72; }
+
+.dev-card-top { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+.dev-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: var(--radius-sm);
+  background: var(--color-muted); color: var(--color-accent); flex-shrink: 0;
+}
+.dev-card.paused .dev-icon { color: var(--color-destructive); }
+.dev-name {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-weight: 600; font-size: 15px; flex: 1; min-width: 0;
+}
+.dev-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dev-card-top .signal { flex-shrink: 0; }
+.pause-ind { display: inline-flex; color: var(--color-destructive); flex-shrink: 0; }
+
+.dev-card-meta { font-size: 12px; color: var(--color-muted-fg); overflow-wrap: anywhere; }
+.dev-card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.dev-card-actions {
+  margin-top: 2px; display: flex; flex-wrap: wrap; gap: 0 var(--sp-3);
+}
+.link-btn.resume { color: var(--color-accent); }
+.speed-picker { display: flex; gap: 6px; flex-wrap: wrap; }
+.dev-name-text.guessed { color: var(--color-muted-fg); font-weight: 500; font-style: italic; }
+.dev-node-hint { margin: 0; }

@@ -1,0 +1,17 @@
+#!/bin/sh /etc/rc.common
+# Starts the WET wireless backhaul on a slave node, after WiFi is up.
+# Install as /etc/init.d/freedom-wet && enable. Only acts when
+# freedom.mesh.uplink_ssid is configured (masters don't have it -> no-op).
+START=98
+STOP=11
+
+start() {
+    [ -n "$(uci -q get freedom.mesh.uplink_ssid)" ] || return 0
+    # wait for the base WiFi to be up after boot
+    sleep 15
+    /usr/sbin/freedom-wet.sh start
+}
+
+stop() {
+    /usr/sbin/freedom-wet.sh stop 2>/dev/null
+}

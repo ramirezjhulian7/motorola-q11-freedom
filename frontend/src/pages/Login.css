@@ -1,0 +1,36 @@
+.login-wrap {
+  min-height: 100dvh;
+  display: grid; place-items: center;
+  padding: var(--sp-4);
+}
+.login-card {
+  width: 100%; max-width: 360px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  padding: var(--sp-6);
+  display: flex; flex-direction: column; gap: var(--sp-2);
+}
+.login-brand { text-align: center; margin-bottom: var(--sp-4); }
+.login-brand h1 { font-size: 26px; margin-top: var(--sp-2); }
+.login-brand h1 span { color: var(--color-accent); }
+.login-brand p { color: var(--color-muted-fg); font-size: 13px; margin: 4px 0 0; }
+.login-card label { font-size: 13px; color: var(--color-muted-fg); margin-top: var(--sp-2); }
+.pass-row { display: flex; gap: var(--sp-2); }
+.pass-toggle {
+  background: var(--color-muted); color: var(--color-muted-fg);
+  padding: 0 12px; font-size: 13px; white-space: nowrap;
+}
+.login-err {
+  background: rgba(239,68,68,.12); color: var(--color-destructive);
+  border-radius: var(--radius-sm); padding: 9px 12px; font-size: 13px; margin: 4px 0 0;
+}
+.login-card .btn { margin-top: var(--sp-4); }
+
+.slave-card { max-width: 420px; gap: var(--sp-3); }
+.slave-card .login-brand { margin-bottom: var(--sp-2); }
+.slave-card .login-brand strong { color: var(--color-foreground); }
+.slave-card .kv span { display: inline-flex; align-items: center; gap: 6px; }
+.slave-card .btn { margin-top: 0; }
+.slave-note { margin: 0; }

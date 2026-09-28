@@ -1,0 +1,9 @@
+# Everything that runs on the router or in bash must keep LF line endings,
+# even on a Windows checkout. deploy-router-files.sh ships these files as-is.
+* text=auto
+*.sh      text eol=lf
+*.init    text eol=lf
+*.hotplug text eol=lf
+*.py      text eol=lf
+*.png     binary
+*.woff2   binary

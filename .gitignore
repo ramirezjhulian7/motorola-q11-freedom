@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+**/.DS_Store
+
+# Node / frontend build
+node_modules/
+dist/
+*.log
+
+# Device backups (per node, contain secrets such as /etc/shadow and SSH keys). Never commit.
+backups/
+*.tar.gz
+*.bin
+
+# Optional local clones of the community reference repos (see docs/HARDWARE.md)
+Motorola-MH7601/
+motorola-q11-openwrt/
+
+# Secrets / local
+.env
+*.local
+secrets.sh

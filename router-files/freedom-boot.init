@@ -1,0 +1,95 @@
+#!/bin/sh /etc/rc.common
+# ============================================================================
+# Q11 Freedom - boot guardian. Runs on every boot to GUARANTEE the desired
+# state, so a reboot never silently reverts to Minim/OEM behaviour or loses
+# access.
+#
+# Everything here is IDEMPOTENT (safe to run repeatedly). It does NOT change
+# WiFi/network config; it only enforces: SSH on, web on, Minim off, our services.
+#
+# Install as /etc/init.d/freedom-boot && /etc/init.d/freedom-boot enable
+# ============================================================================
+START=99
+STOP=10
+
+boot() { start "$@"; }   # also run on the special boot sequence
+
+start() {
+    logger -t freedom-boot "enforcing Q11 Freedom persistent state"
+
+    # 1) SSH (Dropbear): keep it enabled at boot. NOTE: on this firmware
+    #    dropbear does not reliably come up after a reboot (it is flaky no
+    #    matter what we try), so in practice SSH is re-enabled manually via the
+    #    Minim backdoor when needed. We don't force a restart here because it
+    #    could kill an active admin session. The web UI (uhttpd) is always up
+    #    and is the primary management path; SSH is only for maintenance.
+    if [ -x /etc/init.d/dropbear ]; then
+        /etc/init.d/dropbear enable 2>/dev/null
+        pidof dropbear >/dev/null 2>&1 || /etc/init.d/dropbear start 2>/dev/null
+    fi
+
+    # 2) Local web (uhttpd) on 80 + 8080 for the SPA, on all interfaces.
+    if [ -x /etc/init.d/uhttpd ]; then
+        # ensure both listen entries exist (idempotent)
+        # Rebuild the listen list deterministically (avoids glob pitfalls like
+        # ':80' matching ':8080'). We want both 80 and 8080 on all interfaces.
+        changed=0
+        for want in '0.0.0.0:80' '0.0.0.0:8080'; do
+            found=0
+            for got in $(uci -q get uhttpd.main.listen_http); do
+                [ "$got" = "$want" ] && found=1
+            done
+            [ "$found" = 0 ] && { uci add_list uhttpd.main.listen_http="$want" 2>/dev/null; changed=1; }
+        done
+        uci commit uhttpd 2>/dev/null
+        /etc/init.d/uhttpd enable 2>/dev/null
+        # restart (not just start) so a new listen port is actually bound
+        if [ "$changed" = 1 ]; then
+            /etc/init.d/uhttpd restart 2>/dev/null
+        else
+            pidof uhttpd >/dev/null 2>&1 || /etc/init.d/uhttpd start 2>/dev/null
+        fi
+    fi
+
+    # 3) Minim/MotoSync cloud must stay DOWN. disable removes boot symlinks;
+    #    we also stop any that somehow came up.
+    for svc in unum unum-support unum-updater minim_inits; do
+        if [ -x "/etc/init.d/$svc" ]; then
+            /etc/init.d/$svc disable 2>/dev/null
+            /etc/init.d/$svc stop 2>/dev/null
+        fi
+    done
+
+    # 4) ttyd (unauthenticated root web shell) must stay OFF. It is removed
+    #    during hardening; make sure a reboot doesn't resurrect it.
+    if [ -x /etc/init.d/ttyd ]; then
+        /etc/init.d/ttyd disable 2>/dev/null
+        /etc/init.d/ttyd stop 2>/dev/null
+    fi
+
+    # 5) Status LED (green = internet, red = no internet). Without Minim the
+    #    factory LED stays blinking blue; our daemon replaces it.
+    if [ -x /etc/init.d/freedom-led ]; then
+        /etc/init.d/freedom-led enable 2>/dev/null
+        /etc/init.d/freedom-led restart 2>/dev/null
+    fi
+
+    # 6) Node ROLE (master/slave): re-applied on EVERY boot so a power cut
+    #    never changes how the node behaves. The logic lives in
+    #    freedom-role.sh (shared with the mesh join flow).
+    [ -x /usr/sbin/freedom-role.sh ] && /usr/sbin/freedom-role.sh
+
+    # 7) Device blocks ("pause internet"). Also hooked into /etc/firewall.user
+    #    so they survive every firewall reload.
+    if [ -x /usr/sbin/freedom-fw.sh ]; then
+        grep -q freedom-fw.sh /etc/firewall.user 2>/dev/null || \
+            echo '[ -x /usr/sbin/freedom-fw.sh ] && /usr/sbin/freedom-fw.sh' >> /etc/firewall.user
+        /usr/sbin/freedom-fw.sh
+    fi
+
+    logger -t freedom-boot "done"
+}
+
+stop() {
+    :   # nothing to tear down; this is a one-shot enforcer
+}

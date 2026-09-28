@@ -1,0 +1,104 @@
+/* ----- Modal (native <dialog>) ------------------------------------------ */
+.modal {
+  padding: 0; border: 1px solid var(--color-border); border-radius: var(--radius);
+  background: var(--color-surface); color: var(--color-foreground);
+  box-shadow: var(--shadow-pop);
+  width: min(440px, calc(100vw - 32px)); max-height: calc(100dvh - 48px);
+}
+.modal-wide { width: min(760px, calc(100vw - 32px)); }
+.modal::backdrop { background: rgba(2, 6, 23, .72); }
+.modal[open] { animation: modal-in var(--dur) var(--ease-out); }
+@keyframes modal-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+.modal-inner { display: flex; flex-direction: column; max-height: calc(100dvh - 50px); }
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-4) 0;
+}
+.modal-head h2 { font-size: 17px; }
+.modal-body { padding: var(--sp-4); overflow: auto; }
+.modal-foot {
+  display: flex; justify-content: flex-end; gap: var(--sp-2); flex-wrap: wrap;
+  padding: var(--sp-3) var(--sp-4) var(--sp-4); border-top: 1px solid var(--color-border);
+}
+.confirm-msg { color: var(--color-muted-fg); font-size: 14px; display: flex; flex-direction: column; gap: var(--sp-2); }
+.confirm-msg p { margin: 0; }
+.confirm-msg strong { color: var(--color-foreground); }
+
+/* ----- Toasts ----------------------------------------------------------- */
+.toasts {
+  position: fixed; z-index: 90; left: 16px; right: 16px;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: var(--sp-2); pointer-events: none;
+}
+@media (min-width: 1024px) {
+  .toasts { left: auto; right: 24px; bottom: 24px; width: 380px; }
+}
+.toast {
+  pointer-events: auto;
+  display: flex; align-items: flex-start; gap: var(--sp-2);
+  padding: 11px 10px 11px 13px; border-radius: var(--radius-sm);
+  background: var(--color-surface-2); border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-pop); font-size: 14px;
+  animation: toast-in var(--dur) var(--ease-out);
+}
+.toast > svg { flex-shrink: 0; margin-top: 1px; }
+.toast span { flex: 1; }
+.toast-ok > svg { color: var(--color-accent); }
+.toast-err { border-color: rgba(239,68,68,.45); }
+.toast-err > svg { color: var(--color-destructive); }
+.toast-info > svg { color: #60a5fa; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* ----- Reboot screen ---------------------------------------------------- */
+.reboot-screen {
+  position: fixed; inset: 0; z-index: 100;
+  display: grid; place-items: center; padding: var(--sp-4);
+  background:
+    radial-gradient(800px 500px at 50% 0%, rgba(34,197,94,.08), transparent 60%),
+    var(--color-background);
+}
+.reboot-card {
+  width: 100%; max-width: 420px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-3);
+}
+.reboot-card h1 { font-size: 22px; }
+.reboot-msg { color: var(--color-muted-fg); font-size: 14px; display: flex; flex-direction: column; gap: var(--sp-2); }
+.reboot-msg p { margin: 0; }
+.reboot-msg strong { color: var(--color-foreground); }
+.reboot-logo.pulsing { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .45; transform: scale(.94); } }
+.reboot-bar {
+  width: 100%; height: 6px; border-radius: 999px; background: var(--color-muted);
+  overflow: hidden; margin-top: var(--sp-2);
+}
+.reboot-bar i {
+  display: block; height: 100%; background: var(--color-accent); border-radius: inherit;
+  transition: width 1s linear;
+}
+.reboot-phase {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 0; font-size: 13px; color: var(--color-muted-fg); font-variant-numeric: tabular-nums;
+}
+.reboot-actions { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
+.spin { animation: spin 1s linear infinite; }
+
+/* ----- Splash ----------------------------------------------------------- */
+.splash {
+  min-height: 100dvh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: var(--sp-4); padding: var(--sp-4);
+  text-align: center;
+}
+.splash-err { color: var(--color-destructive); font-size: 14px; max-width: 360px; margin: 0; }
+.splash-actions { display: flex; gap: var(--sp-2); }
+
+/* ----- Share WiFi QR ---------------------------------------------------- */
+.share-wifi { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); text-align: center; }
+.share-wifi .field { width: 100%; text-align: left; }
+.share-wifi .hint { margin: 0; }
+.wifi-qr { border-radius: var(--radius-sm); max-width: 100%; height: auto; }
+.wifi-qr-empty {
+  width: 220px; height: 220px; display: grid; place-items: center; padding: var(--sp-4);
+  border: 2px dashed var(--color-border); border-radius: var(--radius-sm);
+  color: var(--color-muted-fg); font-size: 13px;
+}
+.reboot-msg .wifi-qr { align-self: center; margin-top: var(--sp-2); }

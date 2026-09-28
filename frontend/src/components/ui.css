@@ -1,0 +1,56 @@
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-4) 0;
+}
+.card-title {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-size: 15px; font-weight: 600; color: var(--color-foreground);
+}
+.card-title svg { color: var(--color-accent); }
+.card-body { padding: var(--sp-4); }
+
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label { font-size: 12px; color: var(--color-muted-fg); text-transform: uppercase; letter-spacing: .04em; }
+.stat-value { font-size: 26px; font-weight: 600; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.stat-value.accent { color: var(--color-accent); }
+.stat-sub { font-size: 12px; color: var(--color-muted-fg); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  padding: 11px 16px; font-size: 14px; font-weight: 600; min-height: 44px;
+}
+.btn-primary { background: var(--color-accent); color: #04210f; }
+.btn-primary:hover:not(:disabled) { background: var(--color-accent-dim); }
+.btn-ghost { background: var(--color-muted); color: var(--color-foreground); }
+.btn-ghost:hover:not(:disabled) { background: var(--color-secondary); }
+.btn-danger { background: var(--color-destructive); color: #fff; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 600;
+}
+.badge-accent { background: rgba(34,197,94,.15); color: var(--color-accent); }
+.badge-muted { background: var(--color-muted); color: var(--color-muted-fg); }
+.badge-warning { background: rgba(245,158,11,.15); color: var(--color-warning); }
+.badge-danger { background: rgba(239,68,68,.15); color: var(--color-destructive); }
+
+.signal { display: inline-flex; align-items: flex-end; gap: 2px; height: 16px; }
+.sig-bar { width: 3px; border-radius: 1px; background: var(--color-border); }
+.sig-bar.on { background: var(--color-accent); }
+
+.empty { padding: var(--sp-6); text-align: center; color: var(--color-muted-fg); font-size: 14px; }
+
+.spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid var(--color-border); border-top-color: var(--color-accent);
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

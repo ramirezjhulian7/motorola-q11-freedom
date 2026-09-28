@@ -1,0 +1,22 @@
+#!/bin/sh /etc/rc.common
+# Q11 Freedom - status LED daemon (green = internet, red = no internet).
+# Starts after the factory LED script (S99) so it has the last word.
+START=99
+STOP=10
+
+start() {
+    # background: the script is an infinite loop
+    /usr/sbin/freedom-led.sh >/dev/null 2>&1 &
+}
+
+stop() {
+    for p in $(ps 2>/dev/null | grep -v grep | grep freedom-led.sh | awk '{print $1}'); do
+        kill "$p" 2>/dev/null
+    done
+}
+
+restart() {
+    stop
+    sleep 1
+    start
+}

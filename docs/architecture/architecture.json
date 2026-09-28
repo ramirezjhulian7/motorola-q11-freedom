@@ -1,0 +1,267 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Q11 Freedom - System architecture",
+    "locale": "en",
+    "output": "architecture.html",
+    "quality_profile": "showcase",
+    "summary": {
+      "headline": "A local control plane for Motorola Q11 mesh routers, with no cloud",
+      "body": "A web panel served by the router itself replaces the dead Minim/MotoSync cloud for Q11 owners. Shown: one master node, its read and write paths, slave sync and SSH provisioning.",
+      "facts": [
+        {
+          "label": "Hardware",
+          "value": "Broadcom BCM6756 · OEM OpenWrt"
+        },
+        {
+          "label": "Stack",
+          "value": "React PWA · POSIX sh CGI · ubus"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "Phone or laptop",
+      "sublabel": "PWA in the browser",
+      "pos": [
+        40,
+        260
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "uhttpd",
+      "type": "frontend",
+      "label": "uhttpd",
+      "sublabel": "HTTPS · serves /app",
+      "pos": [
+        270,
+        260
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "ubus",
+      "type": "security",
+      "label": "ubus / rpcd",
+      "sublabel": "login · read calls",
+      "pos": [
+        510,
+        140
+      ],
+      "size": [
+        150,
+        60
+      ],
+      "tag": "AUTH"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "freedom-api.sh",
+      "sublabel": "CGI · token-checked writes",
+      "pos": [
+        510,
+        380
+      ],
+      "size": [
+        170,
+        60
+      ]
+    },
+    {
+      "id": "uci",
+      "type": "database",
+      "label": "UCI config",
+      "sublabel": "/etc/config/*",
+      "pos": [
+        760,
+        140
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "nvram",
+      "type": "database",
+      "label": "nvram + wl driver",
+      "sublabel": "Broadcom radios",
+      "pos": [
+        760,
+        380
+      ],
+      "size": [
+        160,
+        60
+      ]
+    },
+    {
+      "id": "slaves",
+      "type": "backend",
+      "label": "Slave nodes",
+      "sublabel": "same API · mesh key",
+      "pos": [
+        1010,
+        380
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "operator",
+      "type": "external",
+      "label": "Operator machine",
+      "sublabel": "provision.sh",
+      "pos": [
+        40,
+        560
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "dropbear",
+      "type": "security",
+      "label": "Dropbear SSH",
+      "sublabel": "legacy algorithms",
+      "pos": [
+        270,
+        560
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "boot",
+      "type": "backend",
+      "label": "freedom-boot",
+      "sublabel": "boot guardian",
+      "pos": [
+        760,
+        560
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "minim",
+      "type": "external",
+      "label": "Minim cloud agents",
+      "sublabel": "disabled at boot",
+      "pos": [
+        1010,
+        560
+      ],
+      "size": [
+        150,
+        60
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Master node · Motorola Q11 · OEM OpenWrt",
+      "wraps": [
+        "uhttpd",
+        "ubus",
+        "api",
+        "uci",
+        "nvram",
+        "dropbear",
+        "boot"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "browser-uhttpd",
+      "from": "browser",
+      "to": "uhttpd",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "uhttpd-ubus",
+      "from": "uhttpd",
+      "to": "ubus",
+      "label": "/ubus"
+    },
+    {
+      "id": "uhttpd-api",
+      "from": "uhttpd",
+      "to": "api",
+      "label": "/cgi-bin"
+    },
+    {
+      "id": "api-ubus",
+      "from": "api",
+      "to": "ubus",
+      "label": "check token",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "ubus-uci",
+      "from": "ubus",
+      "to": "uci",
+      "label": "read"
+    },
+    {
+      "id": "api-nvram",
+      "from": "api",
+      "to": "nvram",
+      "label": "write + reboot"
+    },
+    {
+      "id": "api-slaves",
+      "from": "api",
+      "to": "slaves",
+      "label": "sync over HTTPS",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "bottom"
+    },
+    {
+      "id": "operator-dropbear",
+      "from": "operator",
+      "to": "dropbear",
+      "label": "SSH",
+      "variant": "emphasis"
+    },
+    {
+      "id": "dropbear-boot",
+      "from": "dropbear",
+      "to": "boot",
+      "label": "installs files"
+    },
+    {
+      "id": "boot-minim",
+      "from": "boot",
+      "to": "minim",
+      "label": "keeps off",
+      "variant": "dashed"
+    }
+  ]
+}
