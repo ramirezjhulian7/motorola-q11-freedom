@@ -4,6 +4,9 @@ import { Button } from '../components/ui';
 import { Logo } from '../components/Logo';
 import './Login.css';
 
+// The demo router (npm run demo or the GitHub Pages build) accepts any password.
+const DEMO = import.meta.env.MODE === 'demo' || import.meta.env.VITE_STATIC_DEMO === '1';
+
 export function Login() {
   const { login } = useAuth();
   const [user, setUser] = useState('root');
@@ -47,6 +50,8 @@ export function Login() {
             {show ? 'Hide' : 'Show'}
           </button>
         </div>
+
+        {DEMO && <p className="login-hint">Demo mode: any password works.</p>}
 
         {err && <p className="login-err" role="alert">{err}</p>}
 

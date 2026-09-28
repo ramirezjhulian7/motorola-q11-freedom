@@ -26,6 +26,10 @@
   background: rgba(239,68,68,.12); color: var(--color-destructive);
   border-radius: var(--radius-sm); padding: 9px 12px; font-size: 13px; margin: 4px 0 0;
 }
+.login-hint {
+  background: rgba(34,197,94,.12); color: var(--color-accent);
+  border-radius: var(--radius-sm); padding: 9px 12px; font-size: 13px; margin: 4px 0 0;
+}
 .login-card .btn { margin-top: var(--sp-4); }
 
 .slave-card { max-width: 420px; gap: var(--sp-3); }
