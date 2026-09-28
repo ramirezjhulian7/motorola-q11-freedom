@@ -6,7 +6,7 @@ a report that Q11 Freedom worked, or did not, on a unit other than mine.
 ## Report a unit
 
 Open a post in
-[Discussions > It worked on my Q11](https://github.com/ramirezjhulian7/motorola-q11-freedom/discussions)
+[Discussions > It worked on my Q11](https://github.com/ramirezjhulian7/motorola-q11-freedom/discussions/categories/it-worked-on-my-q11)
 with:
 
 - Model on the label (MH7601, MH7602, MH7603 or other).

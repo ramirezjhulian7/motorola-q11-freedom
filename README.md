@@ -270,7 +270,7 @@ WiFi credentials to an issue. See [CONTRIBUTING.md](CONTRIBUTING.md).
 Two things make it easier for the next owner with a Q11 in a drawer:
 
 - **Tell us it worked.** Post your model and firmware version under
-  [Discussions > It worked on my Q11](https://github.com/ramirezjhulian7/motorola-q11-freedom/discussions).
+  [Discussions > It worked on my Q11](https://github.com/ramirezjhulian7/motorola-q11-freedom/discussions/categories/it-worked-on-my-q11).
   Every confirmed unit makes the supported list more trustworthy.
 - **Star the repo.** Stars are how other owners find this in GitHub search.
 
