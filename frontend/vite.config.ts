@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { mockRouter } from './demo/mock-router.ts'
+import { pagesMeta } from './demo/pages-meta.ts'
 
 // Router IP for the dev proxy (override with the VITE_ROUTER env var).
 const ROUTER = process.env.VITE_ROUTER || 'http://192.168.50.1'
@@ -21,6 +22,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       demo && mockRouter(),
+      pages && pagesMeta(),
       // The PWA scope is /app/ on the router; the Pages demo does not need it.
       !pages && VitePWA({
         registerType: 'autoUpdate',
