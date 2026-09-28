@@ -5,6 +5,9 @@ after the Minim / MotoSync cloud went dark. Q11 Freedom turns each unit into a
 self-managed router with its own local web panel: no account, no app store app
 and no cloud.
 
+**[Try the live demo](https://ramirezjhulian7.github.io/motorola-q11-freedom/)** in your browser. It runs with fictional data
+and any password logs in.
+
 ![Q11 Freedom home screen](docs/screenshots/desktop-dark-dashboard.png)
 
 > Screenshots come from the built-in demo mode. Every device, address and
@@ -140,8 +143,11 @@ cannot be cabled; see [docs/HARDWARE.md](docs/HARDWARE.md#wireless-backhaul).
 
 ## Try the panel without a router
 
-The frontend ships with a demo mode that answers every API call with fictional
-data. It is also the easiest way to work on the UI.
+The quickest way is the [live demo](https://ramirezjhulian7.github.io/motorola-q11-freedom/), a static build of the same panel
+served by GitHub Pages. Any password logs in, and nothing you change is saved.
+
+The frontend also ships with a demo mode that answers every API call with
+fictional data. It is the easiest way to work on the UI.
 
 ```bash
 cd frontend
@@ -257,7 +263,16 @@ This project builds on earlier community work:
 
 Issues and pull requests are welcome, especially reports from other Minim-era
 Motorola models. Please never attach backups, `/etc/shadow`, keys or your real
-WiFi credentials to an issue.
+WiFi credentials to an issue. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## If it helped you
+
+Two things make it easier for the next owner with a Q11 in a drawer:
+
+- **Tell us it worked.** Post your model and firmware version under
+  [Discussions > It worked on my Q11](https://github.com/ramirezjhulian7/motorola-q11-freedom/discussions).
+  Every confirmed unit makes the supported list more trustworthy.
+- **Star the repo.** Stars are how other owners find this in GitHub search.
 
 ## Disclaimer
 

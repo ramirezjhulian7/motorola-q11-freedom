@@ -10,13 +10,19 @@ const ROUTER = process.env.VITE_ROUTER || 'http://192.168.50.1'
 export default defineConfig(({ mode }) => {
   // Demo mode (`npm run demo` or VITE_DEMO=1): fictional router, no proxy.
   const demo = mode === 'demo' || process.env.VITE_DEMO === '1'
+  // Static demo for GitHub Pages (`npm run build:pages`): fictional router in the browser.
+  const pages = mode === 'pages'
   return {
     // Served from /www/app/ on the router (uhttpd has no SPA rewrite).
-    base: '/app/',
+    base: pages ? '/motorola-q11-freedom/' : '/app/',
+    define: {
+      'import.meta.env.VITE_STATIC_DEMO': JSON.stringify(pages ? '1' : '0'),
+    },
     plugins: [
       react(),
       demo && mockRouter(),
-      VitePWA({
+      // The PWA scope is /app/ on the router; the Pages demo does not need it.
+      !pages && VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
         manifest: {

@@ -19,5 +19,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "demo"]
+  "include": ["vite.config.ts", "demo"],
+  // Runs in the browser (static Pages demo); type-checked by tsconfig.app.json.
+  "exclude": ["demo/browser-mock.ts"]
 }
