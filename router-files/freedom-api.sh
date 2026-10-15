@@ -694,6 +694,17 @@ case "$ACTION" in
     ok "\"names\":{${out%,}}"
     ;;
 
+  # ===== DHCP leases (for firmwares without the ubus luci-rpc object) =======
+  # Same shape as luci-rpc getDHCPLeases: expires = seconds left (0 = infinite).
+  dhcp_leases)
+    out=$(awk -v now="$(date +%s)" '
+      $1 ~ /^[0-9]+$/ && $2 ~ /^[0-9A-Fa-f:]+$/ && $3 ~ /^[0-9.]+$/ {
+        h = ($4 ~ /^[A-Za-z0-9._-]+$/) ? $4 : ""; e = ($1 > 0) ? $1 - now : 0
+        printf "{\"expires\":%d,\"macaddr\":\"%s\",\"ipaddr\":\"%s\",\"hostname\":\"%s\"},", e, toupper($2), $3, h
+      }' /tmp/dhcp.leases 2>/dev/null)
+    ok "\"dhcp_leases\":[${out%,}]"
+    ;;
+
   # ===== Internet service provider (ISP) ===================================
   # The WAN usually sits on a private IP (behind a modem or CGNAT), so the ISP
   # is only visible from outside: the public IP is looked up through an

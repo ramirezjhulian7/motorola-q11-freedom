@@ -57,12 +57,14 @@ The master has `id` = `master`. A slave must be provisioned before it is added:
 The same MAC can be reported by several nodes. Priority to decide which node it
 belongs to: WiFi > cable reported by a slave > cable reported by the master.
 
-DHCP hostnames come separately, via ubus `luci-rpc getDHCPLeases`. That table
+DHCP hostnames come separately, via ubus `luci-rpc getDHCPLeases` (or the CGI
+`dhcp_leases` action on firmwares without that ubus object). That table
 lives in RAM and is wiped on reboot, so a connected device may have no lease
 record.
 
 | Action | Response |
 |---|---|
+| `dhcp_leases` | `dhcp_leases`: `[{ expires, macaddr, ipaddr, hostname }]` read from `/tmp/dhcp.leases`, same shape as ubus `luci-rpc getDHCPLeases` (`expires` = seconds left, 0 = infinite). Fallback for firmwares without the `luci-rpc` object |
 | `host_names` | `names`: `{ "<MAC>": "<hostname>" }`. DHCP hostnames the master remembered in `/etc/freedom-hosts` (flash), used to show the name of a device that kept its IP across a reboot. Written by `/etc/hotplug.d/dhcp/50-freedom-names` (dnsmasq notification on every new/renewed lease; only writes when something changes; max 500 entries). Only `[A-Za-z0-9._-]` |
 
 The app identifies each device in `frontend/src/lib/deviceType.ts`: a cleaned-up

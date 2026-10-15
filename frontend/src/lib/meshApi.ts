@@ -123,6 +123,10 @@ export function ispBrand(i: IspInfo): string {
 export const getHostNames = async () =>
   (await post<{ names: Record<string, string> }>('host_names')).names ?? {};
 
+/** DHCP leases read by the CGI from /tmp/dhcp.leases (same shape as luci-rpc getDHCPLeases). */
+export const getLeasesCgi = async () =>
+  (await post<{ dhcp_leases: { expires: number; hostname: string; macaddr: string; ipaddr: string }[] }>('dhcp_leases')).dhcp_leases ?? [];
+
 export const getLog = async () => (await post<{ log: string }>('get_log')).log ?? '';
 
 /* ----- mesh (master only) ----------------------------------------------- */

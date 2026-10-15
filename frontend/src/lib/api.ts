@@ -3,7 +3,7 @@
    Shapes verified against the live router (OpenWrt 2.0.1.390 / BCM947622).
    =========================================================================== */
 import { call } from './ubus';
-import { getMeshClients, getHostNames, type Station } from './meshApi';
+import { getMeshClients, getHostNames, getLeasesCgi, type Station } from './meshApi';
 
 /* ----- System ----------------------------------------------------------- */
 export interface BoardInfo {
@@ -47,8 +47,10 @@ export interface DhcpLease {
 }
 
 export async function getDhcpLeases(): Promise<DhcpLease[]> {
-  const r = await call<{ dhcp_leases: DhcpLease[] }>('luci-rpc', 'getDHCPLeases');
-  return (r?.dhcp_leases ?? []).map((l) => ({
+  // Some firmwares ship without the luci-rpc object ("Object not found"): read the file through the CGI.
+  const list = await call<{ dhcp_leases: DhcpLease[] }>('luci-rpc', 'getDHCPLeases')
+    .then((r) => r?.dhcp_leases ?? [], () => getLeasesCgi());
+  return list.map((l) => ({
     ...l,
     hostname: l.hostname && l.hostname !== '*' ? l.hostname : '',   // '' = the device sent no name
     macaddr: (l.macaddr || '').toUpperCase(),
