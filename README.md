@@ -33,10 +33,12 @@ reset. Q11 Freedom restores all of that locally, on the hardware you already own
 - **Mesh**: topology, per-node status, add a node, sync, reboot and remove nodes.
 - **Devices**: every client with the physical node it is connected to, connection type
   (2.4 GHz, 5 GHz or wired), signal, vendor guessed from the MAC prefix and a custom name.
+  Shown as a list or as a map of the mesh (internet → master → each node → its devices).
 - **Per-device controls**: pause internet, download speed limit and IP reservation.
 - **WiFi**: network name, password and channel per band, with a QR code to share the network.
 - **Network**: WAN (DHCP, static IP or PPPoE), LAN and DHCP pool.
-- **System**: admin password (copied to every node), logs and reboot.
+- **System**: admin password (copied to every node), logs, reboot and the panel language.
+- **English or Spanish**: pick the language under System; it is remembered per browser.
 - **Status LED**: solid green with internet, solid red without it.
 - **Installable PWA** on your phone, served over HTTPS by the router itself.
 
@@ -57,7 +59,7 @@ to its original state. Details in [docs/HARDWARE.md](docs/HARDWARE.md).
 
 | Supported | Notes |
 |---|---|
-| Motorola Q11 kits: MH7601, MH7602, MH7603 | Verified on stock firmware OpenWrt 2.0.1.390 |
+| Motorola Q11 kits: MH7601, MH7602, MH7603 | Verified on stock firmware OpenWrt 2.0.1.390 and 2.0.1.558 |
 | Other Minim-era Motorola devices | Not tested. The approach may apply, the scripts may not. |
 
 You need:
@@ -171,7 +173,9 @@ browser. Source: [docs/architecture/architecture.json](docs/architecture/archite
 - **uhttpd**, the stock web server, serves the panel from `/www/app` over HTTPS
   with a certificate generated for the node address.
 - **Reads** go straight to the firmware's native `ubus` JSON-RPC API. Login uses
-  `session.login`, so there is no extra user database to maintain.
+  `session.login`, so there is no extra user database to maintain. Firmware
+  2.0.1.558 lacks the `luci-rpc` object and refuses `system` over HTTP, so DHCP
+  leases and board/system info fall back to the CGI there.
 - **Writes** go to `freedom-api.sh`, a small POSIX shell CGI. It validates the
   `ubus` session token on every request and checks every parameter against
   strict patterns before touching the system. The `ubus` HTTP ACLs on this
@@ -191,6 +195,7 @@ The full API contract is in [docs/API.md](docs/API.md).
 
 | Task | Command |
 |---|---|
+| Update to a new release | `git pull`, then `deploy-router-files.sh` and `deploy-spa.sh` on every node (router scripts first) |
 | Update only the web app | `bash scripts/deploy-spa.sh <ip> <password>` |
 | Update only the router scripts | `bash scripts/deploy-router-files.sh <ip> <password>` |
 | Re-provision or upgrade a node | `bash scripts/provision.sh <ip> <password> --role <master\|slave> --lan-ip <ip>` |
@@ -227,6 +232,7 @@ router-files/             Installed on the router
 
 frontend/                 React + Vite PWA, built to small static files
   demo/                   Mock router used by `npm run demo`
+  src/i18n/               UI language: t() and the Spanish strings (es/*.json)
 ```
 
 ## Security model

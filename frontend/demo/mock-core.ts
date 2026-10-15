@@ -14,7 +14,7 @@ const S1 = 'node2';
 const S2 = 'node3';
 const SSID = 'MyHomeWiFi';
 const HOSTNAME = 'Q11-Living-Room';
-const VERSION = '1.0.1';
+const VERSION = '1.1.0';
 
 const now = () => Math.floor(Date.now() / 1000);
 const BOOT = now() - 1036800;     // "up for 12 days"

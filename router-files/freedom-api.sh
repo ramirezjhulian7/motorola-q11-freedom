@@ -21,7 +21,7 @@
 #  - JSON emitted by a shell CGI must escape newlines.
 # ============================================================================
 
-FREEDOM_VERSION="1.0.1"
+FREEDOM_VERSION="1.1.0"
 CONFIG_NS="freedom"
 MESH_ACTIONS=" status assoclist apply_sync reboot get_log "
 
