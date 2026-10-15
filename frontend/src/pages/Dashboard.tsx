@@ -116,7 +116,7 @@ export function Dashboard() {
             {devices.data ? (
               <Stat label="Connected" value={clients.length} accent
                     sub={`${wifi} on WiFi · ${clients.length - wifi} wired`} />
-            ) : <Loading />}
+            ) : devices.error ? <p className="msg-err">{devices.error.message}</p> : <Loading />}
           </Card>
         </Link>
       </div>
