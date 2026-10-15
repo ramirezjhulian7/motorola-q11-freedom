@@ -4,6 +4,7 @@
    the CGI only reads string values, so every param is stringified here.
    =========================================================================== */
 import { getSession, notifySessionLost } from './ubus';
+import type { BoardInfo, SystemInfo } from './api';
 
 const API_URL = '/cgi-bin/freedom-api.sh';
 
@@ -122,6 +123,9 @@ export function ispBrand(i: IspInfo): string {
 /** MAC(upper) -> DHCP hostname the router remembered (kept across reboots). */
 export const getHostNames = async () =>
   (await post<{ names: Record<string, string> }>('host_names')).names ?? {};
+
+/** `ubus call system board|info` run by the CGI (same shapes as over HTTP ubus). */
+export const getSysInfoCgi = () => post<{ board: BoardInfo; info: SystemInfo }>('sysinfo');
 
 /** DHCP leases read by the CGI from /tmp/dhcp.leases (same shape as luci-rpc getDHCPLeases). */
 export const getLeasesCgi = async () =>

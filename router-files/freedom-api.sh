@@ -21,7 +21,7 @@
 #  - JSON emitted by a shell CGI must escape newlines.
 # ============================================================================
 
-FREEDOM_VERSION="1.0.0"
+FREEDOM_VERSION="1.0.1"
 CONFIG_NS="freedom"
 MESH_ACTIONS=" status assoclist apply_sync reboot get_log "
 
@@ -692,6 +692,14 @@ case "$ACTION" in
   host_names)
     out=$(awk 'NF==2 {printf "\"%s\":\"%s\",", $1, $2}' /etc/freedom-hosts 2>/dev/null)
     ok "\"names\":{${out%,}}"
+    ;;
+
+  # ===== Board + system info (for firmwares whose HTTP ubus can't reach `system`)
+  # Local ubus (as root) has no HTTP ACLs; its multi-line output is valid JSON.
+  sysinfo)
+    B=$(ubus call system board 2>/dev/null); I=$(ubus call system info 2>/dev/null)
+    [ -n "$B" ] && [ -n "$I" ] || fail "system info unavailable"
+    ok "\"board\":$B,\"info\":$I"
     ;;
 
   # ===== DHCP leases (for firmwares without the ubus luci-rpc object) =======

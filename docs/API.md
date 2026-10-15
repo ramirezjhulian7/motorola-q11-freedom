@@ -64,6 +64,7 @@ record.
 
 | Action | Response |
 |---|---|
+| `sysinfo` | `board`, `info`: output of `ubus call system board` / `system info` run locally. Fallback for firmwares whose HTTP ubus refuses the `system` object |
 | `dhcp_leases` | `dhcp_leases`: `[{ expires, macaddr, ipaddr, hostname }]` read from `/tmp/dhcp.leases`, same shape as ubus `luci-rpc getDHCPLeases` (`expires` = seconds left, 0 = infinite). Fallback for firmwares without the `luci-rpc` object |
 | `host_names` | `names`: `{ "<MAC>": "<hostname>" }`. DHCP hostnames the master remembered in `/etc/freedom-hosts` (flash), used to show the name of a device that kept its IP across a reboot. Written by `/etc/hotplug.d/dhcp/50-freedom-names` (dnsmasq notification on every new/renewed lease; only writes when something changes; max 500 entries). Only `[A-Za-z0-9._-]` |
 

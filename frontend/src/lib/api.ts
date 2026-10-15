@@ -3,7 +3,7 @@
    Shapes verified against the live router (OpenWrt 2.0.1.390 / BCM947622).
    =========================================================================== */
 import { call } from './ubus';
-import { getMeshClients, getHostNames, getLeasesCgi, type Station } from './meshApi';
+import { getMeshClients, getHostNames, getLeasesCgi, getSysInfoCgi, type Station } from './meshApi';
 
 /* ----- System ----------------------------------------------------------- */
 export interface BoardInfo {
@@ -34,8 +34,9 @@ export interface SystemInfo {
   };
 }
 
-export const getBoard = () => call<BoardInfo>('system', 'board');
-export const getSystemInfo = () => call<SystemInfo>('system', 'info');
+// Some firmwares refuse `system` over HTTP ubus: fall back to the CGI.
+export const getBoard = () => call<BoardInfo>('system', 'board').catch(async () => (await getSysInfoCgi()).board);
+export const getSystemInfo = () => call<SystemInfo>('system', 'info').catch(async () => (await getSysInfoCgi()).info);
 
 /* ----- DHCP leases / devices -------------------------------------------- */
 export interface DhcpLease {

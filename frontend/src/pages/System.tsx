@@ -111,7 +111,7 @@ export function System() {
             <div><span>Model</span><b className="mono">{b.model}</b></div>
             <div><span>Firmware</span><b className="mono">{b.release.version}</b></div>
             <div><span>Kernel</span><b className="mono">{b.kernel}</b></div>
-          </> : <Loading />}
+          </> : board.error ? <p className="msg-err">{board.error.message}</p> : <Loading />}
           <div><span>Uptime</span><b className="mono">{fmtUptime(sys?.uptime ?? s.uptime)}</b></div>
           {sys && <>
             <div><span>Memory in use</span><b className="mono">{memPercent(sys.memory.total, sys.memory.available)}% · {Math.round(sys.memory.available / 1048576)} MB free</b></div>
