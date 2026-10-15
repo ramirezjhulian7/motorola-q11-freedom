@@ -10,7 +10,7 @@ of Q11 Freedom. Everything below was verified over SSH on real units.
 |---|---|
 | SoC | Broadcom BCM6756 (ARM Cortex-A7) |
 | Platform / target | `brcmbca`, board `bcm947622` |
-| Firmware | OEM OpenWrt 2.0.1.390 (built by Minim) |
+| Firmware | OEM OpenWrt 2.0.1.390 (built by Minim). Seen in the wild too: 2.0.1.558 (target `brcmbca/bcm96756`), which has no ubus `luci-rpc` object; the CGI covers it with fallbacks |
 | Kernel | Linux 4.19 (4.19.183) |
 | C library | glibc (not musl) |
 | Writable storage | `/overlay` (mounted as `/`): 16.8 MB total, about 15.8 MB free |

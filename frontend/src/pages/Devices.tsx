@@ -1,15 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  RefreshCw, Pencil, Gauge, Check, X, Cable, Search, PauseCircle, PlayCircle, Pin, Router,
+  RefreshCw, Pencil, Gauge, Check, X, Cable, Search, PauseCircle, PlayCircle, Pin, Router, List, Network,
 } from 'lucide-react';
-import { Card, Badge, SignalBars, Empty, Button, DeviceIcon, Loading } from '../components/ui';
+import { Card, Badge, SignalBars, Empty, Button, DeviceIcon, Loading, Segmented } from '../components/ui';
+import { DeviceMap } from '../components/DeviceMap';
 import { useToast, errMsg } from '../components/Toast';
 import { ReserveModal, type ReserveTarget } from '../components/ReserveModal';
 import { usePoll } from '../lib/usePoll';
 import { getDevicesByNode, type ConnectedDevice } from '../lib/api';
 import {
-  getFreedomConfig, getNodes, listStatic, setDeviceName, setSpeed, setBlock, BAD_CHARS,
+  getFreedomConfig, getNodes, listStatic, setDeviceName, setSpeed, setBlock, getIsp, ispBrand, BAD_CHARS,
 } from '../lib/meshApi';
 import { identify, loadVendors, TYPE_LABEL, type DeviceType } from '../lib/deviceType';
 import { nodeLabel } from '../lib/nodes';
@@ -26,6 +27,11 @@ const SPEED_PRESETS = [
 ];
 
 type Kind = 'all' | 'wifi' | 'cable' | 'paused';
+type View = 'list' | 'map';
+
+// remembered per browser (a convenience only: storage may be unavailable)
+const VIEW_KEY = 'freedom.devices.view';
+const readView = (): View => { try { return localStorage.getItem(VIEW_KEY) === 'map' ? 'map' : 'list'; } catch { return 'list'; } };
 
 interface Row extends ConnectedDevice {
   displayName: string;
@@ -62,6 +68,9 @@ export function Devices() {
   const [busy, setBusy] = useState<string | null>(null);
   const [reserve, setReserve] = useState<ReserveTarget | null>(null);
   const [type, setType] = useState<DeviceType | 'all'>('all');
+  const [view, setViewState] = useState<View>(readView);
+  const setView = (v: View) => { setViewState(v); try { localStorage.setItem(VIEW_KEY, v); } catch { /* ignore */ } };
+  const isp = usePoll(() => getIsp(), 3_600_000);
   // vendor table is a separate chunk: rows re-identify once it arrives
   const [vendorsReady, setVendorsReady] = useState(false);
   useEffect(() => { loadVendors().then(() => setVendorsReady(true)).catch(() => {}); }, []);
@@ -170,7 +179,13 @@ export function Devices() {
     <div className="page">
       <header className="page-head">
         <h1>Devices</h1>
-        <Button variant="ghost" onClick={refreshAll}><RefreshCw size={16} /> Refresh</Button>
+        <div className="head-actions">
+          <Segmented label="View" value={view} onChange={setView} options={[
+            { value: 'list', label: <><List size={14} /> List</> },
+            { value: 'map', label: <><Network size={14} /> Map</> },
+          ]} />
+          <Button variant="ghost" onClick={refreshAll} aria-label="Refresh"><RefreshCw size={16} /></Button>
+        </div>
       </header>
 
       <div className="dev-filters">
@@ -204,6 +219,13 @@ export function Devices() {
         </div>
       </div>
 
+      {view === 'map' && devs.data && nodes.data ? (
+        <Card>
+          <DeviceMap devices={visible} nodes={nodes.data} label={(id) => nodeLabel(id, nodeNames)}
+                     isp={isp.data ? ispBrand(isp.data) : null}
+                     onPick={(mac) => { setView('list'); setKind('all'); setType('all'); setNode('all'); setQ(mac); }} />
+        </Card>
+      ) : (
       <Card>
         {devs.loading && !devs.data ? <Loading />
           : devs.error && !devs.data ? <p className="msg-err">{devs.error.message}</p>
@@ -312,6 +334,7 @@ export function Devices() {
           </div>
         )}
       </Card>
+      )}
 
       <p className="hint">
         "Pause internet" cuts the device's internet access across the whole mesh; it stays connected to the local network.

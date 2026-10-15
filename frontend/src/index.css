@@ -202,3 +202,4 @@ input[aria-invalid="true"] { border-color: var(--color-destructive); }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+.seg-item { display: inline-flex; align-items: center; gap: 6px; }
