@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../auth';
 import { Button } from '../components/ui';
 import { Logo } from '../components/Logo';
+import { t } from '../i18n';
 import './Login.css';
 
 // The demo router (npm run demo or the GitHub Pages build) accepts any password.
@@ -22,7 +23,7 @@ export function Login() {
     try {
       await login(user, pass);
     } catch {
-      setErr('Wrong username or password.');
+      setErr(t('Wrong username or password.'));
     } finally {
       setBusy(false);
     }
@@ -34,29 +35,29 @@ export function Login() {
         <div className="login-brand">
           <Logo size={48} />
           <h1>Q11 <span>Freedom</span></h1>
-          <p>Local control panel</p>
+          <p>{t('Local control panel')}</p>
         </div>
 
-        <label htmlFor="user">Username</label>
+        <label htmlFor="user">{t('Username')}</label>
         <input id="user" autoComplete="username" value={user}
                onChange={(e) => setUser(e.target.value)} />
 
-        <label htmlFor="pass">Password</label>
+        <label htmlFor="pass">{t('Password')}</label>
         <div className="pass-row">
           <input id="pass" type={show ? 'text' : 'password'} autoComplete="current-password"
                  value={pass} onChange={(e) => setPass(e.target.value)} autoFocus />
           <button type="button" className="pass-toggle" onClick={() => setShow((s) => !s)}
-                  aria-label={show ? 'Hide password' : 'Show password'}>
-            {show ? 'Hide' : 'Show'}
+                  aria-label={show ? t('Hide password') : t('Show password')}>
+            {show ? t('Hide') : t('Show')}
           </button>
         </div>
 
-        {DEMO && <p className="login-hint">Demo mode: any password works.</p>}
+        {DEMO && <p className="login-hint">{t('Demo mode: any password works.')}</p>}
 
         {err && <p className="login-err" role="alert">{err}</p>}
 
         <Button type="submit" disabled={busy || !pass}>
-          {busy ? 'Signing in…' : 'Sign in'}
+          {busy ? t('Signing in…') : t('Sign in')}
         </Button>
       </form>
     </div>

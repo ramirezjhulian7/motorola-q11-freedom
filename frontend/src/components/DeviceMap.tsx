@@ -1,5 +1,6 @@
 import { Globe, Router, Cable, Wifi, PauseCircle } from 'lucide-react';
 import { DeviceIcon, SignalBars } from './ui';
+import { t } from '../i18n';
 import type { DeviceType } from '../lib/deviceType';
 import type { MeshNodeInfo } from '../lib/meshApi';
 import './DeviceMap.css';
@@ -19,13 +20,13 @@ export interface MapDevice {
 
 // cls drives the line style: solid green = cable, animated dashes = WiFi
 const GROUPS: { key: string; cls: string; label: string; how: string; icon: typeof Wifi; match: (d: MapDevice) => boolean }[] = [
-  { key: 'cable', cls: 'g-cable', label: 'Cable', how: 'by cable', icon: Cable, match: (d) => d.conn === 'cable' },
-  { key: '5G', cls: 'g-5', label: 'WiFi 5 GHz', how: 'over WiFi 5 GHz', icon: Wifi, match: (d) => d.conn === 'wifi' && d.band === '5G' },
-  { key: '2.4G', cls: 'g-24', label: 'WiFi 2.4 GHz', how: 'over WiFi 2.4 GHz', icon: Wifi, match: (d) => d.conn === 'wifi' && d.band !== '5G' },
+  { key: 'cable', cls: 'g-cable', label: t('Cable'), how: t('by cable'), icon: Cable, match: (d) => d.conn === 'cable' },
+  { key: '5G', cls: 'g-5', label: 'WiFi 5 GHz', how: t('over WiFi 5 GHz'), icon: Wifi, match: (d) => d.conn === 'wifi' && d.band === '5G' },
+  { key: '2.4G', cls: 'g-24', label: 'WiFi 2.4 GHz', how: t('over WiFi 2.4 GHz'), icon: Wifi, match: (d) => d.conn === 'wifi' && d.band !== '5G' },
 ];
 
 const quality = (dbm: number | null) =>
-  dbm == null ? '' : dbm >= -55 ? 'excellent' : dbm >= -67 ? 'good' : dbm >= -78 ? 'fair' : 'weak';
+  dbm == null ? '' : dbm >= -55 ? t('excellent') : dbm >= -67 ? t('good') : dbm >= -78 ? t('fair') : t('weak');
 
 /**
  * Map of connected devices: internet → master → one column per node (the
@@ -44,14 +45,14 @@ export function DeviceMap({ devices, nodes, label, isp, onPick }: {
   const offline = devices.filter((d) => !d.conn && !d.nodeName).length;
   const byNode = (id: string) => leaves.filter((d) => d.nodeId === id);
   const columns = [
-    ...(master ? [{ node: master, title: 'Direct to the master' }] : []),
+    ...(master ? [{ node: master, title: t('Direct to the master') }] : []),
     ...nodes.filter((n) => !n.self).map((n) => ({ node: n, title: label(n.id) })),
   ];
 
   return (
     <div className="dmap">
-      <div className="dmap-legend" aria-label="Legend">
-        <span><i className="lg-line g-cable" /> Cable</span>
+      <div className="dmap-legend" aria-label={t('Legend')}>
+        <span><i className="lg-line g-cable" /> {t('Cable')}</span>
         <span><i className="lg-line g-5" /> WiFi 5 GHz</span>
         <span><i className="lg-line g-24" /> WiFi 2.4 GHz</span>
       </div>
@@ -62,10 +63,10 @@ export function DeviceMap({ devices, nodes, label, isp, onPick }: {
           <div className="dmap-master">
             <Router size={18} />
             <div><strong>{label(master.id)}</strong><span className="mono">{master.ip}</span></div>
-            <span className="dmap-count">{leaves.length} devices</span>
+            <span className="dmap-count">{t('{n} devices', { n: leaves.length })}</span>
           </div>
         )}
-        {columns.length > 1 && <span className="dmap-backhaul"><Cable size={11} /> wired backhaul</span>}
+        {columns.length > 1 && <span className="dmap-backhaul"><Cable size={11} /> {t('wired backhaul')}</span>}
       </div>
 
       <ul className="dmap-cols">
@@ -78,17 +79,17 @@ export function DeviceMap({ devices, nodes, label, isp, onPick }: {
                 <span className={'mesh-dot' + (node.online ? '' : ' off')} />
                 <div>
                   <strong>{title}</strong>
-                  <span className="mono">{node.self ? 'Master WiFi and ports' : node.ip}</span>
+                  <span className="mono">{node.self ? t('Master WiFi and ports') : node.ip}</span>
                 </div>
                 {node.online ? (
-                  <span className="dmap-split" title={`${nCable} wired · ${list.length - nCable} on WiFi`}>
+                  <span className="dmap-split" title={t('{cable} wired · {wifi} on WiFi', { cable: nCable, wifi: list.length - nCable })}>
                     <span className="c"><Cable size={12} /> {nCable}</span>
                     <span className="w"><Wifi size={12} /> {list.length - nCable}</span>
                   </span>
-                ) : <span className="dmap-count">offline</span>}
+                ) : <span className="dmap-count">{t('offline')}</span>}
               </div>
               {list.length === 0 ? (
-                <p className="dmap-empty">{node.online ? 'No devices' : 'The node does not respond'}</p>
+                <p className="dmap-empty">{node.online ? t('No devices') : t('The node does not respond')}</p>
               ) : GROUPS.map((g) => {
                 const items = list.filter(g.match);
                 if (!items.length) return null;
@@ -99,9 +100,9 @@ export function DeviceMap({ devices, nodes, label, isp, onPick }: {
                       {items.map((d) => (
                         <button key={d.mac} className={'dmap-leaf' + (d.paused ? ' paused' : '')}
                                 onClick={() => onPick(d.mac)}
-                                title={`${d.displayName} · connected to ${title === 'Direct to the master' ? label(node.id) : title} ${g.how}`
-                                  + (d.signal != null ? ` · signal ${quality(d.signal)} (${d.signal} dBm)` : '')
-                                  + (d.paused ? ' · internet paused' : '')}>
+                                title={t('{name} · connected to {node} {how}', { name: d.displayName, node: title === t('Direct to the master') ? label(node.id) : title, how: g.how })
+                                  + (d.signal != null ? ' · ' + t('signal {quality} ({dbm} dBm)', { quality: quality(d.signal), dbm: d.signal }) : '')
+                                  + (d.paused ? ' · ' + t('internet paused') : '')}>
                           <span className="dmap-ico"><DeviceIcon type={d.type} size={15} /></span>
                           <span className={'dmap-name' + (d.guessed ? ' guessed' : '')}>{d.displayName}</span>
                           {d.paused ? <PauseCircle size={14} className="dmap-paused" />
@@ -116,7 +117,7 @@ export function DeviceMap({ devices, nodes, label, isp, onPick }: {
           );
         })}
       </ul>
-      {offline > 0 && <p className="hint dmap-note">{offline} offline device(s) are not shown on the map.</p>}
+      {offline > 0 && <p className="hint dmap-note">{t('{n} offline device(s) are not shown on the map.', { n: offline })}</p>}
     </div>
   );
 }

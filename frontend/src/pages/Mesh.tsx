@@ -19,6 +19,7 @@ import {
 import { nodeLabel } from '../lib/nodes';
 import { fmtUptime, fmtAgo } from '../lib/format';
 import { useNode, useStatus } from '../status';
+import { t } from '../i18n';
 import './Mesh.css';
 
 export function Mesh() {
@@ -58,12 +59,12 @@ export function Mesh() {
 
   const saveName = async (id: string) => {
     const name = draft.trim();
-    if (BAD_CHARS.test(name)) return toast.err('The name cannot contain quotes, \\, $ or `.');
+    if (BAD_CHARS.test(name)) return toast.err(t('The name cannot contain quotes, \\, $ or `.'));
     try {
       await setNodeName(id, name);
       setEditing(null);
       cfg.refresh();
-      toast.ok(name ? `Node renamed to "${name}".` : 'The node name was removed.');
+      toast.ok(name ? t('Node renamed to "{name}".', { name }) : t('The node name was removed.'));
     } catch (e) { toast.err(errMsg(e)); }
   };
 
@@ -72,9 +73,9 @@ export function Mesh() {
     try {
       const res = await syncNodes();
       const mine = only ? res.filter((r) => r.id === only) : res;
-      if (!mine.length) toast.info('There are no nodes to sync.');
+      if (!mine.length) toast.info(t('There are no nodes to sync.'));
       else if (mine.every((r) => r.result === 'ok')) {
-        toast.ok(only ? `${label(only)}: synced.` : `${mine.length} node(s) synced.`);
+        toast.ok(only ? t('{name}: synced.', { name: label(only) }) : t('{n} node(s) synced.', { n: mine.length }));
       } else {
         const bad = mine.filter((r) => r.result !== 'ok');
         const text = bad.map((r) => `${label(r.id)} ${SYNC_TEXT[r.result] ?? r.result}`).join(' · ');
@@ -88,30 +89,30 @@ export function Mesh() {
   const doReboot = async (n: MeshNodeInfo) => {
     if (n.self) {
       const ok = await confirm({
-        title: 'Reboot the master',
+        title: t('Reboot the master'),
         message: <>
-          <p>The master takes ~1 minute to come back. Meanwhile <strong>the whole mesh has no internet</strong>.</p>
-          {slaves.length > 0 && <p>The slaves stay on and get internet back when it returns.</p>}
+          <p>{t('The master takes ~1 minute to come back. Meanwhile')} <strong>{t('the whole mesh has no internet')}</strong>.</p>
+          {slaves.length > 0 && <p>{t('The slaves stay on and get internet back when it returns.')}</p>}
         </>,
-        confirmLabel: 'Reboot', danger: true,
+        confirmLabel: t('Reboot'), danger: true,
       });
       if (!ok) return;
       try {
         await rebootRouter();
-        reboot({ title: 'Rebooting the master', message: <p>The mesh will have internet again in ~1 minute.</p> });
+        reboot({ title: t('Rebooting the master'), message: <p>{t('The mesh will have internet again in ~1 minute.')}</p> });
       } catch (e) { toast.err(errMsg(e)); }
       return;
     }
     const ok = await confirm({
-      title: `Reboot ${label(n.id)}`,
-      message: <p>Devices connected to this node will move to another node or drop off for ~1 minute.</p>,
-      confirmLabel: 'Reboot', danger: true,
+      title: t('Reboot {name}', { name: label(n.id) }),
+      message: <p>{t('Devices connected to this node will move to another node or drop off for ~1 minute.')}</p>,
+      confirmLabel: t('Reboot'), danger: true,
     });
     if (!ok) return;
     setBusy(`reboot:${n.id}`);
     try {
       await rebootNode(n.id);
-      toast.ok(`${label(n.id)} is rebooting. It will be back in ~1 minute.`);
+      toast.ok(t('{name} is rebooting. It will be back in ~1 minute.', { name: label(n.id) }));
       setTimeout(nodes.refresh, 5000);
     } catch (e) { toast.err(errMsg(e)); }
     finally { setBusy(null); }
@@ -119,18 +120,18 @@ export function Mesh() {
 
   const doRemove = async (n: MeshNodeInfo) => {
     const ok = await confirm({
-      title: `Remove ${label(n.id)} from the mesh`,
+      title: t('Remove {name} from the mesh', { name: label(n.id) }),
       message: <>
-        <p>The master will stop managing and syncing it. The router is not wiped: it keeps its current settings.</p>
-        <p>To use it again, add it back with its password.</p>
+        <p>{t('The master will stop managing and syncing it. The router is not wiped: it keeps its current settings.')}</p>
+        <p>{t('To use it again, add it back with its password.')}</p>
       </>,
-      confirmLabel: 'Remove node', danger: true,
+      confirmLabel: t('Remove node'), danger: true,
     });
     if (!ok) return;
     setBusy(`remove:${n.id}`);
     try {
       await removeNode(n.id);
-      toast.ok(`${label(n.id)} is no longer part of the mesh.`);
+      toast.ok(t('{name} is no longer part of the mesh.', { name: label(n.id) }));
       refresh();
     } catch (e) { toast.err(errMsg(e)); }
     finally { setBusy(null); }
@@ -139,25 +140,25 @@ export function Mesh() {
   return (
     <div className="page">
       <header className="page-head">
-        <h1>Mesh</h1>
+        <h1>{t('Mesh')}</h1>
         <div className="head-actions">
           {slaves.length > 0 && (
             <Button variant="ghost" onClick={() => doSync()} disabled={!!busy}>
-              <RefreshCw size={16} className={busy === 'sync:all' ? 'spin' : ''} /> Sync all
+              <RefreshCw size={16} className={busy === 'sync:all' ? 'spin' : ''} /> {t('Sync all')}
             </Button>
           )}
-          <Button onClick={() => setAdding(true)}><Plus size={16} /> Add node</Button>
+          <Button onClick={() => setAdding(true)}><Plus size={16} /> {t('Add node')}</Button>
         </div>
       </header>
       {nodes.data && (
-        <p className="page-sub">{online} of {list.length} node(s) online · all wired to the master</p>
+        <p className="page-sub">{t('{online} of {total} node(s) online · all wired to the master', { online, total: list.length })}</p>
       )}
 
       {nodes.loading && !nodes.data ? <Card><Loading /></Card>
         : nodes.error && !nodes.data ? <Card><p className="msg-err">{nodes.error.message}</p></Card>
         : (
         <>
-          <Card title="Topology" icon={<Cable size={18} />}>
+          <Card title={t('Topology')} icon={<Cable size={18} />}>
             <div className="topo">
               {master && <TopoNode n={master} name={label(master.id)} c={counts(master)} />}
               <ul className="topo-kids">
@@ -165,7 +166,7 @@ export function Mesh() {
                 {slaves.length === 0 && (
                   <li>
                     <button className="topo-node topo-add" onClick={() => setAdding(true)}>
-                      <Plus size={18} /> <span>Add the first node</span>
+                      <Plus size={18} /> <span>{t('Add the first node')}</span>
                     </button>
                   </li>
                 )}
@@ -185,10 +186,10 @@ export function Mesh() {
                       {editing === n.id ? (
                         <span className="name-edit">
                           <input value={draft} onChange={(e) => setDraft(e.target.value)} autoFocus maxLength={40}
-                                 aria-label="Node name" placeholder={n.self ? 'Master' : 'e.g. Bedroom'}
+                                 aria-label={t('Node name')} placeholder={n.self ? t('Master') : t('e.g. Bedroom')}
                                  onKeyDown={(e) => { if (e.key === 'Enter') saveName(n.id); if (e.key === 'Escape') setEditing(null); }} />
-                          <button className="icon-btn ok" onClick={() => saveName(n.id)} aria-label="Save"><Check size={16} /></button>
-                          <button className="icon-btn" onClick={() => setEditing(null)} aria-label="Cancel"><X size={16} /></button>
+                          <button className="icon-btn ok" onClick={() => saveName(n.id)} aria-label={t('Save')}><Check size={16} /></button>
+                          <button className="icon-btn" onClick={() => setEditing(null)} aria-label={t('Cancel')}><X size={16} /></button>
                         </span>
                       ) : (
                         <div className="node-title">
@@ -197,54 +198,54 @@ export function Mesh() {
                         </div>
                       )}
                       <div className="node-badges">
-                        {n.self && <Badge tone="accent">Master</Badge>}
-                        <Badge tone={n.online ? 'accent' : 'danger'}>{n.online ? 'Online' : 'Offline'}</Badge>
+                        {n.self && <Badge tone="accent">{t('Master')}</Badge>}
+                        <Badge tone={n.online ? 'accent' : 'danger'}>{n.online ? t('Online') : t('Offline')}</Badge>
                         {!n.self && n.online && (
-                          <Badge tone={n.synced ? 'muted' : 'warning'}>{n.synced ? 'Synced' : 'Not synced'}</Badge>
+                          <Badge tone={n.synced ? 'muted' : 'warning'}>{n.synced ? t('Synced') : t('Not synced')}</Badge>
                         )}
                       </div>
                     </div>
 
                     {n.online ? (
                       <div className="node-stats">
-                        <div><Clock size={14} /><span>Uptime</span><b className="mono">{fmtUptime(n.uptime ?? 0)}</b></div>
-                        <div><Users size={14} /><span>Clients</span>
-                          <b className="mono">{counts(n).wifi} WiFi · {devs.data ? counts(n).cable : '…'} wired</b></div>
-                        <div><Globe size={14} /><span>Internet</span><b className={n.internet ? 'ok' : 'bad'}>{n.internet ? 'Yes' : 'No'}</b></div>
-                        <div><RefreshCw size={14} /><span>Synced</span><b>{n.self ? '—' : fmtAgo(n.last_sync)}</b></div>
+                        <div><Clock size={14} /><span>{t('Uptime')}</span><b className="mono">{fmtUptime(n.uptime ?? 0)}</b></div>
+                        <div><Users size={14} /><span>{t('Clients')}</span>
+                          <b className="mono">{t('{wifi} WiFi · {cable} wired', { wifi: counts(n).wifi, cable: devs.data ? counts(n).cable : '…' })}</b></div>
+                        <div><Globe size={14} /><span>{t('Internet')}</span><b className={n.internet ? 'ok' : 'bad'}>{n.internet ? t('Yes') : t('No')}</b></div>
+                        <div><RefreshCw size={14} /><span>{t('Synced')}</span><b>{n.self ? '—' : fmtAgo(n.last_sync)}</b></div>
                       </div>
                     ) : (
                       <p className="warn-box"><AlertTriangle size={15} />
-                        Not responding. Check that it is powered on and wired to the master.
+                        {t('Not responding. Check that it is powered on and wired to the master.')}
                       </p>
                     )}
                     {outdated && (
                       <p className="warn-box"><AlertTriangle size={15} />
-                        Version {n.version} (the master has {master!.version}). Update it with deploy-router-files.sh.
+                        {t('Version {version} (the master has {master}). Update it with deploy-router-files.sh.', { version: n.version ?? '', master: master!.version ?? '' })}
                       </p>
                     )}
                     {!n.self && n.online && !n.synced && (
-                      <p className="hint">This node's WiFi network or password does not match the master. Use "Sync".</p>
+                      <p className="hint">{t('This node\'s WiFi network or password does not match the master. Use "Sync".')}</p>
                     )}
 
                     <div className="node-actions">
                       <button className="link-btn" onClick={() => { setEditing(n.id); setDraft(names[n.id] || ''); }}>
-                        <Pencil size={14} /> Rename
+                        <Pencil size={14} /> {t('Rename')}
                       </button>
                       {!n.self && (
                         <button className="link-btn" onClick={() => doSync(n.id)} disabled={!!busy}>
-                          <RefreshCw size={14} className={isBusy('sync') ? 'spin' : ''} /> Sync
+                          <RefreshCw size={14} className={isBusy('sync') ? 'spin' : ''} /> {t('Sync')}
                         </button>
                       )}
                       <button className="link-btn" onClick={() => setLog(n)} disabled={!n.online}>
-                        <ScrollText size={14} /> Log
+                        <ScrollText size={14} /> {t('Log')}
                       </button>
                       <button className="link-btn danger" onClick={() => doReboot(n)} disabled={!n.online || !!busy}>
-                        <Power size={14} /> Reboot
+                        <Power size={14} /> {t('Reboot')}
                       </button>
                       {!n.self && (
                         <button className="link-btn danger" onClick={() => doRemove(n)} disabled={!!busy}>
-                          <Trash2 size={14} /> Remove
+                          <Trash2 size={14} /> {t('Remove')}
                         </button>
                       )}
                     </div>
@@ -257,14 +258,14 @@ export function Mesh() {
       )}
 
       <p className="hint">
-        The master copies the network name, the WiFi password and the admin password to every node.
-        Channels are not copied: each node picks its own.
+        {t('The master copies the network name, the WiFi password and the admin password to every node.')}{' '}
+        {t('Channels are not copied: each node picks its own.')}
       </p>
 
       <AddNodeWizard open={adding} onClose={closeWizard} masterIp={status.lan_ip}
                      knownIps={list.map((n) => n.ip)} />
       <LogViewer open={!!log} onClose={() => setLog(null)}
-                 title={log ? `Log · ${label(log.id)}` : ''}
+                 title={log ? t('Log · {name}', { name: label(log.id) }) : ''}
                  load={() => (log?.self ? getLog() : getNodeLog(log!.id))} />
     </div>
   );
@@ -279,7 +280,7 @@ function TopoNode({ n, name, c }: { n: MeshNodeInfo; name: string; c: { wifi: nu
         <span className="mono">{n.ip}</span>
       </div>
       {n.online && (
-        <span className="topo-count" title={`${c.wifi} on WiFi · ${c.cable} wired`}>
+        <span className="topo-count" title={t('{wifi} on WiFi · {cable} wired', { wifi: c.wifi, cable: c.cable })}>
           <Wifi size={12} /> {c.wifi} <Cable size={12} /> {c.cable}
         </span>
       )}

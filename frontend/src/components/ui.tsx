@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Smartphone, Monitor, Gamepad2, Tv, Cpu, Router, HelpCircle, Camera, Printer } from 'lucide-react';
 import type { DeviceType } from '../lib/deviceType';
 import './ui.css';
+import { t } from '../i18n';
 
 const TYPE_ICON: Record<DeviceType, typeof Smartphone> = {
   phone: Smartphone, computer: Monitor, console: Gamepad2,
@@ -57,7 +58,7 @@ export function SignalBars({ dbm }: { dbm: number | null }) {
   // -50 great .. -90 poor
   const lvl = dbm == null ? 0 : dbm >= -55 ? 4 : dbm >= -67 ? 3 : dbm >= -78 ? 2 : 1;
   return (
-    <span className="signal" title={dbm == null ? 'no data' : `${dbm} dBm`} aria-label={dbm == null ? 'no signal' : `${dbm} dBm`}>
+    <span className="signal" title={dbm == null ? t('no data') : `${dbm} dBm`} aria-label={dbm == null ? t('no signal') : `${dbm} dBm`}>
       {[1, 2, 3, 4].map((i) => (
         <i key={i} className={'sig-bar' + (i <= lvl ? ' on' : '')} style={{ height: 4 + i * 3 }} />
       ))}
@@ -70,7 +71,7 @@ export function Empty({ message }: { message: string }) {
 }
 
 export function Spinner() {
-  return <span className="spinner" role="status" aria-label="loading" />;
+  return <span className="spinner" role="status" aria-label={t('loading')} />;
 }
 
 export function Loading() {

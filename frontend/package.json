@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "build:pages": "tsc -b && vite build --mode pages",
     "lint": "oxlint",
+    "i18n:check": "node scripts/check-i18n.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -4,6 +4,7 @@ import { Button, Field } from './ui';
 import { useToast, errMsg } from './Toast';
 import { setStatic, type StaticLease } from '../lib/meshApi';
 import { isIp, net3, MAC_RE } from '../lib/format';
+import { t } from '../i18n';
 
 export interface ReserveTarget { mac: string; ip: string; name: string; label?: string; }
 
@@ -42,12 +43,12 @@ export function ReserveModal({ open, onClose, target, lanIp, reserved, devices, 
 
   const macU = mac.trim().toUpperCase();
   const ipT = ip.trim();
-  const macErr = macU && !MAC_RE.test(macU) ? 'Use the MAC format AA:BB:CC:DD:EE:FF.' : '';
+  const macErr = macU && !MAC_RE.test(macU) ? t('Use the MAC format AA:BB:CC:DD:EE:FF.') : '';
   const ipErr = !ipT ? ''
-    : !isIp(ipT) ? 'Invalid IP address.'
-    : net3(ipT) !== lan ? `It must be on the ${lan}.x network.`
-    : ipT === lanIp ? 'That is the master\'s IP.'
-    : reserved.some((r) => r.ip === ipT && r.mac !== macU) ? 'That IP is already reserved for another device.'
+    : !isIp(ipT) ? t('Invalid IP address.')
+    : net3(ipT) !== lan ? t('It must be on the {net}.x network.', { net: lan })
+    : ipT === lanIp ? t('That is the master\'s IP.')
+    : reserved.some((r) => r.ip === ipT && r.mac !== macU) ? t('That IP is already reserved for another device.')
     : '';
   const ok = MAC_RE.test(macU) && isIp(ipT) && !ipErr;
 
@@ -66,7 +67,7 @@ export function ReserveModal({ open, onClose, target, lanIp, reserved, devices, 
     setBusy(true);
     try {
       await setStatic(macU, ipT, toHost(name));
-      toast.ok(`IP ${ipT} reserved. The device gets it when it renews its connection.`);
+      toast.ok(t('IP {ip} reserved. The device gets it when it renews its connection.', { ip: ipT }));
       onSaved();
       onClose();
     } catch (ex) { toast.err(errMsg(ex)); }
@@ -76,25 +77,25 @@ export function ReserveModal({ open, onClose, target, lanIp, reserved, devices, 
   const freeDevices = (devices ?? []).filter((d) => !reserved.some((r) => r.mac === d.mac));
 
   return (
-    <Modal open={open} onClose={onClose} title={target ? `Reserve IP · ${target.label || target.name || target.mac}` : 'New IP reservation'}
+    <Modal open={open} onClose={onClose} title={target ? t('Reserve IP · {name}', { name: target.label || target.name || target.mac }) : t('New IP reservation')}
            locked={busy}
            footer={<>
-             <Button variant="ghost" onClick={onClose}>Cancel</Button>
-             <Button type="submit" form="reserve-form" disabled={!ok || busy}>{busy ? 'Saving…' : 'Reserve'}</Button>
+             <Button variant="ghost" onClick={onClose}>{t('Cancel')}</Button>
+             <Button type="submit" form="reserve-form" disabled={!ok || busy}>{busy ? t('Saving…') : t('Reserve')}</Button>
            </>}>
       <form id="reserve-form" className="form" onSubmit={save}>
         <p className="hint" style={{ margin: 0 }}>
-          The router will always give this device the same IP. Useful for printers, cameras or port forwarding.
+          {t('The router will always give this device the same IP. Useful for printers, cameras or port forwarding.')}
         </p>
         {target ? (
-          <Field label="Device"><input value={target.mac} readOnly className="mono dim-input" /></Field>
+          <Field label={t('Device')}><input value={target.mac} readOnly className="mono dim-input" /></Field>
         ) : (
           <>
             {freeDevices.length > 0 && (
-              <Field label="Pick a connected device" htmlFor="res-dev">
+              <Field label={t('Pick a connected device')} htmlFor="res-dev">
                 <select id="res-dev" value={freeDevices.some((d) => d.mac === macU) ? macU : ''}
                         onChange={(e) => pickDevice(e.target.value)}>
-                  <option value="">— Type the MAC by hand —</option>
+                  <option value="">{t('— Type the MAC by hand —')}</option>
                   {freeDevices.map((d) => <option key={d.mac} value={d.mac}>{d.label || d.name || d.mac} · {d.ip}</option>)}
                 </select>
               </Field>
@@ -105,13 +106,13 @@ export function ReserveModal({ open, onClose, target, lanIp, reserved, devices, 
             </Field>
           </>
         )}
-        <Field label="Reserved IP" htmlFor="res-ip" error={ipErr}>
+        <Field label={t('Reserved IP')} htmlFor="res-ip" error={ipErr}>
           <input id="res-ip" className="mono" inputMode="decimal" value={ip} placeholder={`${lan}.50`}
                  onChange={(e) => setIp(e.target.value)} aria-invalid={!!ipErr} autoFocus={!!target} />
         </Field>
-        <Field label="Network name (optional)" htmlFor="res-name"
-               hint={name && toHost(name) !== name ? `It will be saved as "${toHost(name)}".` : 'Letters, digits and dashes only.'}>
-          <input id="res-name" value={name} maxLength={32} onChange={(e) => setName(e.target.value)} placeholder="printer" />
+        <Field label={t('Network name (optional)')} htmlFor="res-name"
+               hint={name && toHost(name) !== name ? t('It will be saved as "{name}".', { name: toHost(name) }) : t('Letters, digits and dashes only.')}>
+          <input id="res-name" value={name} maxLength={32} onChange={(e) => setName(e.target.value)} placeholder={t('printer')} />
         </Field>
       </form>
     </Modal>

@@ -5,14 +5,15 @@ import { Button, Field, Spinner } from './ui';
 import { errMsg } from './Toast';
 import { discoverNodes, adoptNode, BAD_CHARS, type FoundNode, type SyncResult } from '../lib/meshApi';
 import { isIp, net3 } from '../lib/format';
+import { t } from '../i18n';
 
 type Step = 'find' | 'creds' | 'working' | 'done';
 
 const SYNC_DONE: Record<SyncResult, string> = {
-  ok: 'It already has the master\'s WiFi network and password.',
-  reboot: 'It is rebooting to apply the master\'s WiFi network (~1 min).',
-  offline: 'It did not respond to the first sync. Use "Sync" once it is online.',
-  error: 'The first sync failed. Use "Sync" in the node list.',
+  ok: t('It already has the master\'s WiFi network and password.'),
+  reboot: t('It is rebooting to apply the master\'s WiFi network (~1 min).'),
+  offline: t('It did not respond to the first sync. Use "Sync" once it is online.'),
+  error: t('The first sync failed. Use "Sync" in the node list.'),
 };
 
 /**
@@ -42,7 +43,7 @@ export function AddNodeWizard({ open, onClose, masterIp, knownIps }: {
   const scan = async () => {
     setScanning(true); setScanErr('');
     try { setFound(await discoverNodes()); }
-    catch (e) { setScanErr(errMsg(e, 'Could not search.')); setFound([]); }
+    catch (e) { setScanErr(errMsg(e, t('Could not search.'))); setFound([]); }
     finally { setScanning(false); }
   };
 
@@ -56,16 +57,16 @@ export function AddNodeWizard({ open, onClose, masterIp, knownIps }: {
   const manualErr = (() => {
     const v = manual.trim();
     if (!v) return '';
-    if (!isIp(v)) return 'Enter a full IP, e.g. ' + lan + '.2';
-    if (net3(v) !== lan) return `It must be on the master's network (${lan}.x).`;
-    if (v === masterIp) return 'That is the master\'s IP.';
-    if (knownIps.includes(v)) return 'That node is already in the mesh.';
+    if (!isIp(v)) return t('Enter a full IP, e.g. {ip}', { ip: lan + '.2' });
+    if (net3(v) !== lan) return t('It must be on the master\'s network ({net}.x).', { net: lan });
+    if (v === masterIp) return t('That is the master\'s IP.');
+    if (knownIps.includes(v)) return t('That node is already in the mesh.');
     return '';
   })();
 
   const pick = (v: string) => { setIp(v); setErr(''); setStep('creds'); };
 
-  const nameErr = BAD_CHARS.test(name) ? 'The name cannot contain quotes, \\, $ or `.' : '';
+  const nameErr = BAD_CHARS.test(name) ? t('The name cannot contain quotes, \\, $ or `.') : '';
 
   const adopt = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,12 +77,12 @@ export function AddNodeWizard({ open, onClose, masterIp, knownIps }: {
       setResult({ id: r.id, sync: r.sync });
       setStep('done');
     } catch (ex) {
-      setErr(errMsg(ex, 'Could not add the node.'));
+      setErr(errMsg(ex, t('Could not add the node.')));
       setStep('creds');
     }
   };
 
-  const title = step === 'done' ? 'Node added' : 'Add a node';
+  const title = step === 'done' ? t('Node added') : t('Add a node');
   const stepNo = { find: 1, creds: 2, working: 2, done: 3 }[step];
 
   return (
@@ -89,20 +90,20 @@ export function AddNodeWizard({ open, onClose, masterIp, knownIps }: {
            footer={
              step === 'find' ? (
                <>
-                 <Button variant="ghost" onClick={() => onClose()}>Cancel</Button>
-                 <Button onClick={() => pick(manual.trim())} disabled={!manual.trim() || !!manualErr}>Next</Button>
+                 <Button variant="ghost" onClick={() => onClose()}>{t('Cancel')}</Button>
+                 <Button onClick={() => pick(manual.trim())} disabled={!manual.trim() || !!manualErr}>{t('Next')}</Button>
                </>
              ) : step === 'creds' ? (
                <>
-                 <Button variant="ghost" onClick={() => setStep('find')}><ArrowLeft size={16} /> Back</Button>
-                 <Button type="submit" form="adopt-form" disabled={!password || !!nameErr}>Add to mesh</Button>
+                 <Button variant="ghost" onClick={() => setStep('find')}><ArrowLeft size={16} /> {t('Back')}</Button>
+                 <Button type="submit" form="adopt-form" disabled={!password || !!nameErr}>{t('Add to mesh')}</Button>
                </>
              ) : step === 'done' ? (
-               <Button onClick={() => onClose(true)}>Done</Button>
+               <Button onClick={() => onClose(true)}>{t('Done')}</Button>
              ) : null
            }>
-      <ol className="wiz-steps" aria-label={`Step ${stepNo} of 3`}>
-        {['Find', 'Access', 'Done'].map((s, i) => (
+      <ol className="wiz-steps" aria-label={t('Step {n} of 3', { n: stepNo })}>
+        {[t('Find'), t('Access'), t('Done')].map((s, i) => (
           <li key={s} className={i + 1 < stepNo ? 'done' : i + 1 === stepNo ? 'on' : ''}>{s}</li>
         ))}
       </ol>
@@ -110,17 +111,17 @@ export function AddNodeWizard({ open, onClose, masterIp, knownIps }: {
       {step === 'find' && (
         <div className="form">
           <p className="info-box"><Info size={15} />
-            <span>The node must be provisioned as a slave (<code>provision.sh &lt;ip&gt; &lt;password&gt; --role slave --lan-ip {lan}.N</code>) and wired to a LAN port of the master.</span>
+            <span>{t('The node must be provisioned as a slave')} (<code>provision.sh &lt;ip&gt; &lt;password&gt; --role slave --lan-ip {lan}.N</code>) {t('and wired to a LAN port of the master.')}</span>
           </p>
 
           <div className="wiz-scan-head">
-            <strong>Nodes found</strong>
+            <strong>{t('Nodes found')}</strong>
             <button className="link-btn" onClick={scan} disabled={scanning}>
-              <Search size={14} /> {scanning ? 'Searching…' : 'Search again'}
+              <Search size={14} /> {scanning ? t('Searching…') : t('Search again')}
             </button>
           </div>
           {scanning ? (
-            <div className="wiz-scanning"><Spinner /> Looking for Q11 Freedom nodes on {lan}.x…</div>
+            <div className="wiz-scanning"><Spinner /> {t('Looking for Q11 Freedom nodes on {net}.x…', { net: lan })}</div>
           ) : scanErr ? (
             <p className="msg-err">{scanErr}</p>
           ) : found && found.length > 0 ? (
@@ -134,10 +135,10 @@ export function AddNodeWizard({ open, onClose, masterIp, knownIps }: {
               ))}
             </div>
           ) : (
-            <p className="hint">No new node showed up. Check the cable or enter its IP below.</p>
+            <p className="hint">{t('No new node showed up. Check the cable or enter its IP below.')}</p>
           )}
 
-          <Field label="Or enter the node's IP" htmlFor="node-ip" error={manualErr}>
+          <Field label={t('Or enter the node\'s IP')} htmlFor="node-ip" error={manualErr}>
             <input id="node-ip" className="mono" inputMode="decimal" placeholder={`${lan}.2`}
                    value={manual} onChange={(e) => setManual(e.target.value)} aria-invalid={!!manualErr}
                    onKeyDown={(e) => { if (e.key === 'Enter' && manual.trim() && !manualErr) pick(manual.trim()); }} />
@@ -147,21 +148,21 @@ export function AddNodeWizard({ open, onClose, masterIp, knownIps }: {
 
       {step === 'creds' && (
         <form id="adopt-form" className="form" onSubmit={adopt}>
-          <p className="wiz-target"><Router size={16} /> Node at <b className="mono">{ip}</b></p>
-          <Field label={<><KeyRound size={13} /> Node root password</>} htmlFor="node-pw"
-                 hint="The one you used when provisioning it. It is used only once: afterwards the master copies its own over.">
+          <p className="wiz-target"><Router size={16} /> {t('Node at')} <b className="mono">{ip}</b></p>
+          <Field label={<><KeyRound size={13} /> {t('Node root password')}</>} htmlFor="node-pw"
+                 hint={t('The one you used when provisioning it. It is used only once: afterwards the master copies its own over.')}>
             <div className="pass-row">
               <input id="node-pw" type={showPw ? 'text' : 'password'} value={password} autoFocus
                      onChange={(e) => setPassword(e.target.value)} autoComplete="off" />
               <button type="button" className="pass-toggle" onClick={() => setShowPw((s) => !s)}>
-                {showPw ? 'Hide' : 'Show'}
+                {showPw ? t('Hide') : t('Show')}
               </button>
             </div>
           </Field>
-          <Field label="Name (optional)" htmlFor="node-name" error={nameErr}
-                 hint="Where it is, so you can tell it apart: Bedroom, Office, Patio…">
+          <Field label={t('Name (optional)')} htmlFor="node-name" error={nameErr}
+                 hint={t('Where it is, so you can tell it apart: Bedroom, Office, Patio…')}>
             <input id="node-name" value={name} maxLength={40} onChange={(e) => setName(e.target.value)}
-                   placeholder="e.g. Bedroom" aria-invalid={!!nameErr} />
+                   placeholder={t('e.g. Bedroom')} aria-invalid={!!nameErr} />
           </Field>
           {err && <p className="msg-err" role="alert">{err}</p>}
         </form>
@@ -170,16 +171,16 @@ export function AddNodeWizard({ open, onClose, masterIp, knownIps }: {
       {step === 'working' && (
         <div className="wiz-working">
           <Spinner />
-          <strong>Adding {ip}…</strong>
-          <p className="hint">Signing in to the node, handing it the mesh key and copying the WiFi network. It takes about 20 seconds.</p>
+          <strong>{t('Adding {ip}…', { ip })}</strong>
+          <p className="hint">{t('Signing in to the node, handing it the mesh key and copying the WiFi network. It takes about 20 seconds.')}</p>
         </div>
       )}
 
       {step === 'done' && result && (
         <div className="wiz-working">
           <CheckCircle2 size={40} className="wiz-ok" />
-          <strong>{name.trim() || result.id} is now part of the mesh</strong>
-          <p className="hint">ID <span className="mono">{result.id}</span> · {SYNC_DONE[result.sync] ?? result.sync}</p>
+          <strong>{t('{name} is now part of the mesh', { name: name.trim() || result.id })}</strong>
+          <p className="hint">{t('ID')} <span className="mono">{result.id}</span> · {SYNC_DONE[result.sync] ?? result.sync}</p>
         </div>
       )}
     </Modal>

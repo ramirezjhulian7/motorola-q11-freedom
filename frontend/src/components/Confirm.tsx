@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
 import { Modal } from './Modal';
 import { Button } from './ui';
+import { t } from '../i18n';
 
 interface ConfirmOpts {
   title: string;
@@ -39,9 +40,9 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
         title={opts?.title ?? ''}
         footer={opts && (
           <>
-            <Button variant="ghost" onClick={() => close(false)}>{opts.cancelLabel ?? 'Cancel'}</Button>
+            <Button variant="ghost" onClick={() => close(false)}>{opts.cancelLabel ?? t('Cancel')}</Button>
             <Button variant={opts.danger ? 'danger' : 'primary'} onClick={() => close(true)} autoFocus>
-              {opts.confirmLabel ?? 'Continue'}
+              {opts.confirmLabel ?? t('Continue')}
             </Button>
           </>
         )}

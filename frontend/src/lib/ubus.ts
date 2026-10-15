@@ -4,6 +4,8 @@
    session.login -> ubus_rpc_session token, then call objects/methods.
    =========================================================================== */
 
+import { t } from '../i18n';
+
 const NULL_SESSION = '00000000000000000000000000000000';
 const STORAGE_KEY = 'freedom.session';
 
@@ -59,7 +61,7 @@ async function rpc<T>(method: string, params: unknown[]): Promise<T> {
   });
   if (!res.ok) throw new UbusError(-1, `HTTP ${res.status}`);
   const json = await res.json();
-  if (json.error) throw new UbusError(json.error.code ?? -1, json.error.message ?? 'rpc error');
+  if (json.error) throw new UbusError(json.error.code ?? -1, json.error.message ?? t('rpc error'));
   return json.result as T;
 }
 
@@ -74,14 +76,14 @@ export async function call<T = any>(
   args: Record<string, unknown> = {},
 ): Promise<T> {
   const result = await rpc<UbusResult<T>>('call', [sessionId, object, method, args]);
-  if (!Array.isArray(result)) throw new UbusError(-1, 'malformed ubus response');
+  if (!Array.isArray(result)) throw new UbusError(-1, t('malformed ubus response'));
   const [status, data] = result;
   if (status !== 0) {
     if (status === 6) {
       notifySessionLost();
-      throw new UbusError(6, 'session expired');
+      throw new UbusError(6, t('session expired'));
     }
-    throw new UbusError(status, `ubus status ${status} on ${object}.${method}`);
+    throw new UbusError(status, t('ubus status {status} on {object}.{method}', { status, object, method }));
   }
   return data as T;
 }
@@ -103,7 +105,7 @@ export async function login(username: string, password: string): Promise<LoginIn
   ]);
   const [status, data] = result;
   if (status !== 0 || !data?.ubus_rpc_session) {
-    throw new UbusError(status, 'Invalid credentials');
+    throw new UbusError(status, t('Invalid credentials'));
   }
   setSession(data.ubus_rpc_session);
   return data;

@@ -16,10 +16,11 @@ import { identify, loadVendors, TYPE_LABEL, type DeviceType } from '../lib/devic
 import { nodeLabel } from '../lib/nodes';
 import { isIp } from '../lib/format';
 import { useNode } from '../status';
+import { t } from '../i18n';
 import './Devices.css';
 
 const SPEED_PRESETS = [
-  { label: 'No limit', kbit: 0 },
+  { label: t('No limit'), kbit: 0 },
   { label: '2 Mbps', kbit: 2000 },
   { label: '5 Mbps', kbit: 5000 },
   { label: '10 Mbps', kbit: 10000 },
@@ -95,7 +96,7 @@ export function Devices() {
       const nodeId = nodeByMac.get(d.mac);
       const nodeName = nodeId ? nodeLabel(nodeId, nodeNames) : null;
       const id = identify(d.mac, d.hostname);
-      const custom = names[d.mac] || (nodeName ? (/^node\b/i.test(nodeName) ? nodeName : `${nodeName} node`) : '');
+      const custom = names[d.mac] || (nodeName ? (/^nod[eo]\b/i.test(nodeName) ? nodeName : t('{name} node', { name: nodeName })) : '');
       return {
         ...d,
         ...id,
@@ -139,7 +140,7 @@ export function Devices() {
 
   const saveName = async (mac: string) => {
     const name = draft.trim();
-    if (BAD_CHARS.test(name)) return toast.err('The name cannot contain quotes, \\, $ or `.');
+    if (BAD_CHARS.test(name)) return toast.err(t('The name cannot contain quotes, \\, $ or `.'));
     try {
       await setDeviceName(mac, name);
       setEditing(null);
@@ -153,7 +154,7 @@ export function Devices() {
       await setSpeed(d.ipaddr, kbit);
       setSpeedFor(null);
       cfg.refresh();
-      toast.ok(kbit ? `${d.displayName}: download limited to ${kbit / 1000} Mbps.` : `${d.displayName}: no speed limit.`);
+      toast.ok(kbit ? t('{name}: download limited to {n} Mbps.', { name: d.displayName, n: kbit / 1000 }) : t('{name}: no speed limit.', { name: d.displayName }));
     } catch (e) { toast.err(errMsg(e)); }
     finally { setBusy(null); }
   };
@@ -163,7 +164,7 @@ export function Devices() {
     try {
       await setBlock(d.mac, !d.paused);
       await cfg.refresh();
-      toast.ok(d.paused ? `${d.displayName} has internet again.` : `Internet paused for ${d.displayName} across the whole mesh.`);
+      toast.ok(d.paused ? t('{name} has internet again.', { name: d.displayName }) : t('Internet paused for {name} across the whole mesh.', { name: d.displayName }));
     } catch (e) { toast.err(errMsg(e)); }
     finally { setBusy(null); }
   };
@@ -178,13 +179,13 @@ export function Devices() {
   return (
     <div className="page">
       <header className="page-head">
-        <h1>Devices</h1>
+        <h1>{t('Devices')}</h1>
         <div className="head-actions">
-          <Segmented label="View" value={view} onChange={setView} options={[
-            { value: 'list', label: <><List size={14} /> List</> },
-            { value: 'map', label: <><Network size={14} /> Map</> },
+          <Segmented label={t('View')} value={view} onChange={setView} options={[
+            { value: 'list', label: <><List size={14} /> {t('List')}</> },
+            { value: 'map', label: <><Network size={14} /> {t('Map')}</> },
           ]} />
-          <Button variant="ghost" onClick={refreshAll} aria-label="Refresh"><RefreshCw size={16} /></Button>
+          <Button variant="ghost" onClick={refreshAll} aria-label={t('Refresh')}><RefreshCw size={16} /></Button>
         </div>
       </header>
 
@@ -192,11 +193,11 @@ export function Devices() {
         <label className="search">
           <Search size={16} />
           <input type="search" value={q} onChange={(e) => setQ(e.target.value)}
-                 placeholder="Search by name, IP or MAC" aria-label="Search devices" />
+                 placeholder={t('Search by name, IP or MAC')} aria-label={t('Search devices')} />
         </label>
         <div className="dev-filter-row">
-          <div className="btn-row" role="group" aria-label="Connection type">
-            {([['all', 'All'], ['wifi', 'WiFi'], ['cable', 'Wired'], ['paused', 'Paused']] as [Kind, string][]).map(([k, l]) => (
+          <div className="btn-row" role="group" aria-label={t('Connection type')}>
+            {([['all', t('All')], ['wifi', 'WiFi'], ['cable', t('Wired')], ['paused', t('Paused')]] as [Kind, string][]).map(([k, l]) => (
               <button key={k} className={'chip' + (kind === k ? ' on' : '')} aria-pressed={kind === k} onClick={() => setKind(k)}>
                 {l} <span className="count">{counts[k]}</span>
               </button>
@@ -204,14 +205,14 @@ export function Devices() {
           </div>
           <div className="btn-row">
           {typeOptions.length > 1 && (
-            <select className="node-select" value={type} onChange={(e) => setType(e.target.value as DeviceType | 'all')} aria-label="Filter by type">
-              <option value="all">All types</option>
-              {typeOptions.map(([t, n]) => <option key={t} value={t}>{TYPE_LABEL[t]} ({n})</option>)}
+            <select className="node-select" value={type} onChange={(e) => setType(e.target.value as DeviceType | 'all')} aria-label={t('Filter by type')}>
+              <option value="all">{t('All types')}</option>
+              {typeOptions.map(([typ, n]) => <option key={typ} value={typ}>{TYPE_LABEL[typ]} ({n})</option>)}
             </select>
           )}
           {nodeOptions.length > 1 && (
-            <select className="node-select" value={node} onChange={(e) => setNode(e.target.value)} aria-label="Filter by node">
-              <option value="all">All nodes</option>
+            <select className="node-select" value={node} onChange={(e) => setNode(e.target.value)} aria-label={t('Filter by node')}>
+              <option value="all">{t('All nodes')}</option>
               {nodeOptions.map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
             </select>
           )}
@@ -230,7 +231,7 @@ export function Devices() {
         {devs.loading && !devs.data ? <Loading />
           : devs.error && !devs.data ? <p className="msg-err">{devs.error.message}</p>
           : visible.length === 0 ? (
-            <Empty message={rows.length === 0 ? 'No devices connected.' : 'No device matches the filter.'} />
+            <Empty message={rows.length === 0 ? t('No devices connected.') : t('No device matches the filter.')} />
           ) : (
           <div className="dev-cards">
             {visible.map((d) => (
@@ -243,61 +244,61 @@ export function Devices() {
                   {editing === d.mac ? (
                     <span className="name-edit">
                       <input value={draft} onChange={(e) => setDraft(e.target.value)} autoFocus maxLength={40}
-                             aria-label="Device name"
+                             aria-label={t('Device name')}
                              onKeyDown={(e) => { if (e.key === 'Enter') saveName(d.mac); if (e.key === 'Escape') setEditing(null); }} />
-                      <button className="icon-btn ok" onClick={() => saveName(d.mac)} aria-label="Save"><Check size={16} /></button>
-                      <button className="icon-btn" onClick={() => setEditing(null)} aria-label="Cancel"><X size={16} /></button>
+                      <button className="icon-btn ok" onClick={() => saveName(d.mac)} aria-label={t('Save')}><Check size={16} /></button>
+                      <button className="icon-btn" onClick={() => setEditing(null)} aria-label={t('Cancel')}><X size={16} /></button>
                     </span>
                   ) : (
                     <span className="dev-name">
                       <span className={'dev-name-text' + (d.guessed ? ' guessed' : '')}
-                            title={d.guessed ? 'The device does not send its name: this is a guess from the vendor. Tap the pencil to set one.' : undefined}>
+                            title={d.guessed ? t('The device does not send its name: this is a guess from the vendor. Tap the pencil to set one.') : undefined}>
                         {d.displayName}
                       </span>
                       <button className="icon-btn ghost" onClick={() => { setEditing(d.mac); setDraft(names[d.mac] || ''); }}
-                              aria-label="Rename"><Pencil size={13} /></button>
+                              aria-label={t('Rename')}><Pencil size={13} /></button>
                     </span>
                   )}
 
-                  {d.paused ? <span className="pause-ind" title="Internet paused"><PauseCircle size={18} /></span>
-                    : d.conn === 'cable' ? <span className="cable-ind" title="Wired connection"><Cable size={18} /></span>
+                  {d.paused ? <span className="pause-ind" title={t('Internet paused')}><PauseCircle size={18} /></span>
+                    : d.conn === 'cable' ? <span className="cable-ind" title={t('Wired connection')}><Cable size={18} /></span>
                     : d.conn === 'wifi' ? <SignalBars dbm={d.signal} /> : null}
                 </div>
 
                 <div className="dev-card-meta mono">
                   {d.ipaddr} · {d.mac}
-                  {d.hostname && d.hostname !== d.displayName && <> · <span title="Name the device sends">{d.hostname}</span></>}
+                  {d.hostname && d.hostname !== d.displayName && <> · <span title={t('Name the device sends')}>{d.hostname}</span></>}
                 </div>
 
                 <div className="dev-card-tags">
                   {d.nodeId ? <Badge tone="accent">{nodeLabel(d.nodeId, nodeNames)}</Badge>
-                    : <Badge tone="muted">{d.absent ? 'Disconnected' : 'Idle'}</Badge>}
-                  {d.conn === 'cable' ? <Badge tone="muted">Wired</Badge>
+                    : <Badge tone="muted">{d.absent ? t('Disconnected') : t('Idle')}</Badge>}
+                  {d.conn === 'cable' ? <Badge tone="muted">{t('Wired')}</Badge>
                     : d.band ? <Badge tone="muted">{d.band}</Badge> : null}
                   {!d.nodeName && <Badge tone="muted">{TYPE_LABEL[d.type]}</Badge>}
                   {!d.nodeName && d.vendor && !d.oem && !d.displayName.includes(d.vendor) && <Badge tone="muted">{d.vendor}</Badge>}
                   {!d.nodeName && d.oem && (
-                    <span title="Maker of the WiFi module, not of the device"><Badge tone="muted">{d.vendor} module</Badge></span>
+                    <span title={t('Maker of the WiFi module, not of the device')}><Badge tone="muted">{t('{vendor} module', { vendor: d.vendor ?? '' })}</Badge></span>
                   )}
                   {d.privateMac && (
-                    <span title="The device uses a private (random) MAC for this network: its vendor cannot be known.">
-                      <Badge tone="muted">Private MAC</Badge>
+                    <span title={t('The device uses a private (random) MAC for this network: its vendor cannot be known.')}>
+                      <Badge tone="muted">{t('Private MAC')}</Badge>
                     </span>
                   )}
-                  {d.nodeName && <Badge tone="muted">Mesh node</Badge>}
-                  {d.paused && <Badge tone="danger">Internet paused</Badge>}
+                  {d.nodeName && <Badge tone="muted">{t('Mesh node')}</Badge>}
+                  {d.paused && <Badge tone="danger">{t('Internet paused')}</Badge>}
                   {d.limited > 0 && <Badge tone="warning">{Math.round(d.limited / 1000)} Mbps</Badge>}
-                  {d.reservedIp && <Badge tone="muted"><Pin size={11} /> Static IP</Badge>}
+                  {d.reservedIp && <Badge tone="muted"><Pin size={11} /> {t('Static IP')}</Badge>}
                   {d.noLease && (
-                    <span title={'The DHCP lease table lives in memory and is cleared on reboot. The device kept its IP and has not asked for it again.'
-                      + (d.nameSource === 'saved' ? ' The name is the one the router remembered from before.' : '')}>
-                      <Badge tone="muted">No DHCP lease</Badge>
+                    <span title={t('The DHCP lease table lives in memory and is cleared on reboot. The device kept its IP and has not asked for it again.')
+                      + (d.nameSource === 'saved' ? ' ' + t('The name is the one the router remembered from before.') : '')}>
+                      <Badge tone="muted">{t('No DHCP lease')}</Badge>
                     </span>
                   )}
                 </div>
 
                 {!d.nodeName && d.type === 'router' && d.vendor === 'Motorola' && (
-                  <p className="hint dev-node-hint">Is it a Q11 Freedom node? <Link to="/mesh?add=1">Add it to the mesh</Link></p>
+                  <p className="hint dev-node-hint">{t('Is it a Q11 Freedom node?')} <Link to="/mesh?add=1">{t('Add it to the mesh')}</Link></p>
                 )}
                 {!d.nodeName && (
                   <div className="dev-card-actions">
@@ -307,22 +308,22 @@ export function Devices() {
                           <button key={p.kbit} className={'chip' + (d.limited === p.kbit ? ' on' : '')}
                                   disabled={busy === d.mac} onClick={() => applySpeed(d, p.kbit)}>{p.label}</button>
                         ))}
-                        <button className="chip" onClick={() => setSpeedFor(null)} aria-label="Close"><X size={14} /></button>
+                        <button className="chip" onClick={() => setSpeedFor(null)} aria-label={t('Close')}><X size={14} /></button>
                       </div>
                     ) : (
                       <>
                         <button className={'link-btn' + (d.paused ? ' resume' : ' danger')} onClick={() => togglePause(d)}
                                 disabled={busy === d.mac}>
-                          {d.paused ? <><PlayCircle size={14} /> Resume internet</> : <><PauseCircle size={14} /> Pause internet</>}
+                          {d.paused ? <><PlayCircle size={14} /> {t('Resume internet')}</> : <><PauseCircle size={14} /> {t('Pause internet')}</>}
                         </button>
                         {!d.absent && isIp(d.ipaddr) && (
                           <button className="link-btn" onClick={() => setSpeedFor(d.mac)}>
-                            <Gauge size={14} /> Speed limit
+                            <Gauge size={14} /> {t('Speed limit')}
                           </button>
                         )}
                         {!d.absent && (
                           <button className="link-btn" onClick={() => setReserve({ mac: d.mac, ip: d.ipaddr, name: d.guessed ? '' : d.displayName, label: d.displayName })}>
-                            <Pin size={14} /> {d.reservedIp ? `Static IP ${d.reservedIp}` : 'Reserve IP'}
+                            <Pin size={14} /> {d.reservedIp ? t('Static IP {ip}', { ip: d.reservedIp }) : t('Reserve IP')}
                           </button>
                         )}
                       </>
@@ -337,9 +338,9 @@ export function Devices() {
       )}
 
       <p className="hint">
-        "Pause internet" cuts the device's internet access across the whole mesh; it stays connected to the local network.
-        The speed limit applies to downloads and survives reboots. The type and the gray names are a guess based on
-        the vendor and the name the device sends; set your own name with the pencil.
+        {t('"Pause internet" cuts the device\'s internet access across the whole mesh; it stays connected to the local network.')}
+        {' '}{t('The speed limit applies to downloads and survives reboots.')}
+        {' '}{t('The type and the gray names are a guess based on the vendor and the name the device sends; set your own name with the pencil.')}
       </p>
 
       <ReserveModal open={!!reserve} onClose={() => setReserve(null)} target={reserve}

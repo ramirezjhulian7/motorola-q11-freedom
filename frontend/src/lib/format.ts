@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+
 export function fmtUptime(sec: number): string {
   const d = Math.floor(sec / 86400);
   const h = Math.floor((sec % 86400) / 3600);
@@ -24,12 +26,12 @@ export function loadAvg(load: [number, number, number]): number {
 
 /** "5 min ago" from a unix timestamp (seconds). 0 = never. */
 export function fmtAgo(ts: number | undefined): string {
-  if (!ts) return 'never';
+  if (!ts) return t('never');
   const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
-  if (s < 60) return 'just now';
-  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
-  return `${Math.floor(s / 86400)} d ago`;
+  if (s < 60) return t('just now');
+  if (s < 3600) return t('{n} min ago', { n: Math.floor(s / 60) });
+  if (s < 86400) return t('{n} h ago', { n: Math.floor(s / 3600) });
+  return t('{n} d ago', { n: Math.floor(s / 86400) });
 }
 
 /* ----- IPv4 helpers ------------------------------------------------------ */

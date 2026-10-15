@@ -5,26 +5,34 @@
    readable name, the vendor and a device type. No DPI, so it is an estimate:
    the user can always set a custom name.
    =========================================================================== */
+import { t } from '../i18n';
 
 export type DeviceType =
   | 'phone' | 'computer' | 'console' | 'tv' | 'iot' | 'camera' | 'printer' | 'router' | 'unknown';
 
 export const TYPE_LABEL: Record<DeviceType, string> = {
-  phone: 'Phone',
-  computer: 'Computer',
-  console: 'Console',
-  tv: 'TV / Media',
-  iot: 'Smart home',
-  camera: 'Camera',
-  printer: 'Printer',
-  router: 'Network',
-  unknown: 'Unknown',
+  phone: t('Phone'),
+  computer: t('Computer'),
+  console: t('Console'),
+  tv: t('TV / Media'),
+  iot: t('Smart home'),
+  camera: t('Camera'),
+  printer: t('Printer'),
+  router: t('Network'),
+  unknown: t('Unknown'),
 };
 
-// Name built from the vendor: "Hikvision camera", "ASUS device".
-const TYPE_NOUN: Record<DeviceType, string> = {
-  phone: 'phone', computer: 'computer', console: 'console', tv: 'TV', iot: 'device',
-  camera: 'camera', printer: 'printer', router: 'router', unknown: 'device',
+// Name built from the vendor: "Hikvision camera", "ASUS device" (a template, so Spanish can reorder it).
+const TYPE_NOUN: Record<DeviceType, (brand: string) => string> = {
+  phone: (brand) => t('{brand} phone', { brand }),
+  computer: (brand) => t('{brand} computer', { brand }),
+  console: (brand) => t('{brand} console', { brand }),
+  tv: (brand) => t('{brand} TV', { brand }),
+  iot: (brand) => t('{brand} device', { brand }),
+  camera: (brand) => t('{brand} camera', { brand }),
+  printer: (brand) => t('{brand} printer', { brand }),
+  router: (brand) => t('{brand} router', { brand }),
+  unknown: (brand) => t('{brand} device', { brand }),
 };
 
 /* ----- vendor by MAC prefix (lazy: ~33 KB gzip, only where it's needed) --- */
@@ -55,14 +63,14 @@ const KNOWN: Array<[RegExp, (m: RegExpMatchArray) => string, DeviceType, string?
   [/^HL_CAM(\d)\b/i, (m) => `Wyze Cam v${m[1]}`, 'camera'],
   [/^WYZE_CAKP2JFUS\b/i, () => 'Wyze Cam v3', 'camera'],
   [/^(HS|KP|KS|EP|ES)\d{2,3}[A-Z]?$/, (m) => `Kasa ${m[0]}`, 'iot', 'TP-Link'],   // Kasa plugs/switches
-  [/^NPI[0-9A-F]{6}$/i, () => 'HP printer', 'printer'],
-  [/^HP[0-9A-F]{6}$/, () => 'HP printer', 'printer'],
-  [/^EPSON[0-9A-F]{6}$/i, () => 'Epson printer', 'printer'],
-  [/^BRW[0-9A-F]{12}$/i, () => 'Brother printer', 'printer'],
-  [/^amazon-[0-9a-f]+$/i, () => 'Amazon device', 'iot'],                    // Echo / Fire TV
-  [/^android-[0-9a-f]{16}$/i, () => 'Android phone', 'phone'],
-  [/^ESP[_-][0-9A-F]{6}$/i, () => 'ESP module', 'iot'],
-  [/^(DESKTOP|LAPTOP)-[A-Z0-9]{7,8}$/, () => 'Windows PC', 'computer'],
+  [/^NPI[0-9A-F]{6}$/i, () => t('HP printer'), 'printer'],
+  [/^HP[0-9A-F]{6}$/, () => t('HP printer'), 'printer'],
+  [/^EPSON[0-9A-F]{6}$/i, () => t('Epson printer'), 'printer'],
+  [/^BRW[0-9A-F]{12}$/i, () => t('Brother printer'), 'printer'],
+  [/^amazon-[0-9a-f]+$/i, () => t('Amazon device'), 'iot'],                    // Echo / Fire TV
+  [/^android-[0-9a-f]{16}$/i, () => t('Android phone'), 'phone'],
+  [/^ESP[_-][0-9A-F]{6}$/i, () => t('ESP module'), 'iot'],
+  [/^(DESKTOP|LAPTOP)-[A-Z0-9]{7,8}$/, () => t('Windows PC'), 'computer'],
 ];
 
 // Keyword -> type. Order matters: the first match wins.
@@ -86,7 +94,7 @@ export function prettyHost(h: string): string {
 }
 
 export function detectType(mac: string, hostname: string): DeviceType {
-  for (const [re, t] of HOST_RULES) if (hostname && re.test(hostname)) return t;
+  for (const [re, typ] of HOST_RULES) if (hostname && re.test(hostname)) return typ;
   const v = vendorOf(mac);
   if (v && v.hint && v.hint !== 'oem') return v.hint;
   return 'unknown';
@@ -117,10 +125,10 @@ export function identify(mac: string, hostname: string): Identity {
   }
   const type = detectType(mac, '');
   // Motorola prefix + no name: almost surely a Q11 router that is not in the mesh
-  if (v?.brand === 'Motorola') return { ...base, name: 'Motorola router', guessed: true, type: 'router' };
-  if (v && !base.oem) return { ...base, name: `${v.brand} ${TYPE_NOUN[type]}`, guessed: true, type };
+  if (v?.brand === 'Motorola') return { ...base, name: t('Motorola router'), guessed: true, type: 'router' };
+  if (v && !base.oem) return { ...base, name: TYPE_NOUN[type](v.brand), guessed: true, type };
   return {
     ...base, guessed: true, type,
-    name: base.privateMac ? 'Device with private MAC' : 'Unnamed device',
+    name: base.privateMac ? t('Device with private MAC') : t('Unnamed device'),
   };
 }

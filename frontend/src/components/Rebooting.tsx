@@ -3,6 +3,7 @@ import { RotateCw, CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-reac
 import { useAuth } from '../auth';
 import { Logo } from './Logo';
 import { Button } from './ui';
+import { t } from '../i18n';
 import './feedback.css';
 
 /**
@@ -29,7 +30,7 @@ const SLOW_S = 300;
 
 async function probe(): Promise<boolean> {
   const ctl = new AbortController();
-  const t = setTimeout(() => ctl.abort(), 3500);
+  const timer = setTimeout(() => ctl.abort(), 3500);
   try {
     // Any HTTP answer (a 401 included) means uhttpd is back.
     await fetch('/cgi-bin/freedom-api.sh', { method: 'POST', body: '{}', cache: 'no-store', signal: ctl.signal });
@@ -37,7 +38,7 @@ async function probe(): Promise<boolean> {
   } catch {
     return false;
   } finally {
-    clearTimeout(t);
+    clearTimeout(timer);
   }
 }
 
@@ -87,7 +88,7 @@ export function RebootProvider({ children }: { children: ReactNode }) {
           setPhase('back');
           // give rpcd/uhttpd a moment before the user logs in again
           await new Promise((r) => setTimeout(r, 4000));
-          if (run.current === my) finish('The node is back. Please sign in again.');
+          if (run.current === my) finish(t('The node is back. Please sign in again.'));
           return;
         }
         await new Promise((r) => setTimeout(r, state === 'down' ? 2000 : 3000));
@@ -116,21 +117,21 @@ export function RebootProvider({ children }: { children: ReactNode }) {
                 <a className="btn btn-primary" href={opts.manual.href}>
                   <ExternalLink size={16} /> {opts.manual.label}
                 </a>
-                <button className="link-btn" onClick={() => finish()}>Back to sign in</button>
+                <button className="link-btn" onClick={() => finish()}>{t('Back to sign in')}</button>
               </>
             ) : (
               <>
                 <div className="reboot-bar" aria-hidden="true"><i style={{ width: `${pct}%` }} /></div>
                 <p className="reboot-phase" aria-live="polite">
-                  {phase === 'down' && <><RotateCw size={15} className="spin" /> Shutting down…</>}
-                  {phase === 'up' && <><RotateCw size={15} className="spin" /> Waiting for the node to come back · {elapsed}s</>}
-                  {phase === 'back' && <><CheckCircle2 size={15} /> Done, the node is back</>}
-                  {phase === 'slow' && <><AlertTriangle size={15} /> Taking longer than usual · {elapsed}s</>}
+                  {phase === 'down' && <><RotateCw size={15} className="spin" /> {t('Shutting down…')}</>}
+                  {phase === 'up' && <><RotateCw size={15} className="spin" /> {t('Waiting for the node to come back · {n}s', { n: elapsed })}</>}
+                  {phase === 'back' && <><CheckCircle2 size={15} /> {t('Done, the node is back')}</>}
+                  {phase === 'slow' && <><AlertTriangle size={15} /> {t('Taking longer than usual · {n}s', { n: elapsed })}</>}
                 </p>
                 {phase === 'slow' && (
                   <div className="reboot-actions">
-                    <p className="hint">Check that the node's light is on and that this device is still connected to the network.</p>
-                    <Button variant="ghost" onClick={() => location.reload()}>Reload page</Button>
+                    <p className="hint">{t("Check that the node's light is on and that this device is still connected to the network.")}</p>
+                    <Button variant="ghost" onClick={() => location.reload()}>{t('Reload page')}</Button>
                   </div>
                 )}
               </>

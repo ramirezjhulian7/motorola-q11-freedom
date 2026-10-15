@@ -33,8 +33,12 @@ Redact them before pasting any log.
    needs a good reason.
 3. Never add a step that flashes firmware or writes outside the overlay. A
    factory reset must always bring the unit back to stock.
-4. Run `npm run lint` and `npm run build` before opening the pull request.
-5. Describe what you tested and on which model.
+4. Write UI text in English inside `t()` (`frontend/src/i18n`) and add its
+   Spanish to `frontend/src/i18n/es/*.json`. Use `{name}` placeholders, never
+   a template literal inside `t()`.
+5. Run `npm run lint`, `npm run i18n:check` and `npm run build` before opening
+   the pull request.
+6. Describe what you tested and on which model.
 
 ## Wanted
 

@@ -9,9 +9,10 @@ import { getNodes, getFreedomConfig, getIsp, ispBrand } from '../lib/meshApi';
 import { nodeLabel } from '../lib/nodes';
 import { fmtUptime } from '../lib/format';
 import { useNode } from '../status';
+import { t } from '../i18n';
 import './Dashboard.css';
 
-const WAN_LABEL: Record<string, string> = { dhcp: 'Automatic (DHCP)', static: 'Static IP', pppoe: 'PPPoE' };
+const WAN_LABEL: Record<string, string> = { dhcp: t('Automatic (DHCP)'), static: t('Static IP'), pppoe: 'PPPoE' };
 
 export function Dashboard() {
   const s = useNode();
@@ -31,21 +32,21 @@ export function Dashboard() {
 
   const steps = [
     { done: s.pw_changed, icon: KeyRound, to: '/system',
-      title: 'Change the admin password',
-      text: 'It is still the factory one. It is copied to every node.' },
+      title: t('Change the admin password'),
+      text: t('It is still the factory one. It is copied to every node.') },
     { done: !/^mh7601/i.test(s.ssid), icon: PenLine, to: '/wifi',
-      title: 'Name your WiFi network',
-      text: `It is still called "${s.ssid}", the factory name.` },
+      title: t('Name your WiFi network'),
+      text: t('It is still called "{ssid}", the factory name.', { ssid: s.ssid }) },
     { done: s.slaves > 0, icon: Plus, to: '/mesh?add=1',
-      title: 'Add your first node',
-      text: 'Wire it to the master to extend coverage.' },
+      title: t('Add your first node'),
+      text: t('Wire it to the master to extend coverage.') },
   ];
   const pending = steps.filter((x) => !x.done).length;
 
   return (
     <div className="page">
       <header className="page-head">
-        <h1>Home</h1>
+        <h1>{t('Home')}</h1>
         <Badge tone="accent">{s.hostname}</Badge>
       </header>
 
@@ -53,20 +54,20 @@ export function Dashboard() {
         <span className="net-hero-ico"><Globe size={28} /></span>
         <div className="net-hero-main">
           <strong>
-            {s.internet ? 'Connected to the internet' : 'No internet'}
+            {s.internet ? t('Connected to the internet') : t('No internet')}
             {isp.data && <> · <span className="isp-brand">{ispBrand(isp.data)}</span></>}
           </strong>
           {isp.data && (
             <span title={`${isp.data.org} · AS${isp.data.asn}`}>
-              <span className="hide-sm">Provider {isp.data.org} · </span>Public IP <span className="mono">{isp.data.public_ip}</span>
+              <span className="hide-sm">{t('Provider {org}', { org: isp.data.org })} · </span>{t('Public IP')} <span className="mono">{isp.data.public_ip}</span>
             </span>
           )}
           <span>
-            WAN {WAN_LABEL[s.wan_proto] ?? s.wan_proto ?? '—'} · <span className="mono">{s.wan_ip || 'no IP'}</span>
+            WAN {WAN_LABEL[s.wan_proto] ?? s.wan_proto ?? '—'} · <span className="mono">{s.wan_ip || t('no IP')}</span>
           </span>
           {!s.internet && (
             <span className="net-hero-help">
-              Check the cable from the modem to the master's WAN port, or the <Link to="/network">WAN settings</Link>.
+              {t("Check the cable from the modem to the master's WAN port, or the")} <Link to="/network">{t('WAN settings')}</Link>.
             </span>
           )}
         </div>
@@ -74,7 +75,7 @@ export function Dashboard() {
       </section>
 
       {pending > 0 && (
-        <Card title="Getting started" actions={<span className="dim">{steps.length - pending} of {steps.length} done</span>}>
+        <Card title={t('Getting started')} actions={<span className="dim">{t('{done} of {total} done', { done: steps.length - pending, total: steps.length })}</span>}>
           <ol className="steps">
             {steps.map(({ done, icon: Icon, to, title, text }) => (
               <li key={title} className={done ? 'done' : ''}>
@@ -99,38 +100,38 @@ export function Dashboard() {
 
       <div className="grid grid-3">
         <Link to="/wifi" className="card-link">
-          <Card title="WiFi network" icon={<Wifi size={18} />}>
-            <Stat label="Name" value={<span className="ssid">{s.ssid || '—'}</span>} sub="2.4 GHz + 5 GHz" />
+          <Card title={t('WiFi network')} icon={<Wifi size={18} />}>
+            <Stat label={t('Name')} value={<span className="ssid">{s.ssid || '—'}</span>} sub="2.4 GHz + 5 GHz" />
           </Card>
         </Link>
         <Link to="/mesh" className="card-link">
-          <Card title="Nodes" icon={<Share2 size={18} />}>
+          <Card title={t('Nodes')} icon={<Share2 size={18} />}>
             {nodes.data ? (
-              <Stat label="Online" value={`${online}/${list.length}`} accent={online === list.length}
-                    sub={list.length > 1 ? 'wired together' : 'master only'} />
+              <Stat label={t('Online')} value={`${online}/${list.length}`} accent={online === list.length}
+                    sub={list.length > 1 ? t('wired together') : t('master only')} />
             ) : <Loading />}
           </Card>
         </Link>
         <Link to="/devices" className="card-link">
-          <Card title="Devices" icon={<Smartphone size={18} />}>
+          <Card title={t('Devices')} icon={<Smartphone size={18} />}>
             {devices.data ? (
-              <Stat label="Connected" value={clients.length} accent
-                    sub={`${wifi} on WiFi · ${clients.length - wifi} wired`} />
+              <Stat label={t('Connected now')} value={clients.length} accent
+                    sub={t('{wifi} on WiFi · {wired} wired', { wifi, wired: clients.length - wifi })} />
             ) : devices.error ? <p className="msg-err">{devices.error.message}</p> : <Loading />}
           </Card>
         </Link>
       </div>
 
       {list.length > 0 && (
-        <Card title="Mesh" icon={<Share2 size={18} />} actions={<Link to="/mesh" className="dim">Manage</Link>}>
+        <Card title={t('Mesh')} icon={<Share2 size={18} />} actions={<Link to="/mesh" className="dim">{t('Manage')}</Link>}>
           <div className="mesh-list">
             {list.map((n) => (
               <div key={n.id} className="mesh-node">
                 <span className={'mesh-dot' + (n.online ? '' : ' off')} />
                 <span className="mesh-name">{nodeLabel(n.id, names)}</span>
-                {n.online && <span className="dim">{n.clients ?? 0} WiFi · {perNode[n.id]?.cable ?? 0} wired</span>}
+                {n.online && <span className="dim">{t('{wifi} WiFi · {wired} wired', { wifi: n.clients ?? 0, wired: perNode[n.id]?.cable ?? 0 })}</span>}
                 <span className="mono mesh-ip">{n.ip}</span>
-                <Badge tone={n.online ? 'accent' : 'danger'}>{n.online ? 'Online' : 'Offline'}</Badge>
+                <Badge tone={n.online ? 'accent' : 'danger'}>{n.online ? t('Online') : t('Offline')}</Badge>
               </div>
             ))}
           </div>

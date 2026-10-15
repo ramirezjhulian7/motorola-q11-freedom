@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import qrcode from 'qrcode-generator';
 import { Modal } from './Modal';
 import { Field } from './ui';
+import { t } from '../i18n';
 import './feedback.css';
 
 // Byte mode must be UTF-8: the default encoder keeps only the low byte of each
@@ -31,7 +32,7 @@ export function WifiQr({ ssid, wifiKey, size = 220 }: { ssid: string; wifiKey: s
   const pad = 4; // quiet zone the spec asks for
   return (
     <svg className="wifi-qr" width={size} height={size} viewBox={`${-pad} ${-pad} ${n + pad * 2} ${n + pad * 2}`}
-         role="img" aria-label={`QR code to join ${ssid}`} shapeRendering="crispEdges">
+         role="img" aria-label={t('QR code to join {ssid}', { ssid })} shapeRendering="crispEdges">
       <rect x={-pad} y={-pad} width={n + pad * 2} height={n + pad * 2} fill="#fff" />
       <path d={d} fill="#0f172a" />
     </svg>
@@ -51,20 +52,20 @@ export function ShareWifiModal({ open, onClose, ssid, initialKey }: {
   const ready = key.length >= 8 && key.length <= 63;
 
   return (
-    <Modal open={open} onClose={onClose} title="Share WiFi">
+    <Modal open={open} onClose={onClose} title={t('Share WiFi')}>
       <div className="share-wifi">
         {ready ? (
           <>
             <WifiQr ssid={ssid} wifiKey={key} />
-            <p className="hint">Open your phone's camera and point it at the code to join <strong>{ssid}</strong>.</p>
+            <p className="hint">{t("Open your phone's camera and point it at the code to join")} <strong>{ssid}</strong>.</p>
           </>
         ) : (
-          <div className="wifi-qr-empty">Enter the WiFi password to generate the code</div>
+          <div className="wifi-qr-empty">{t('Enter the WiFi password to generate the code')}</div>
         )}
-        <Field label="WiFi password" htmlFor="share-key"
-               hint="The one devices use to connect, not the admin password. If it does not match the real one, the code will not connect.">
+        <Field label={t('WiFi password')} htmlFor="share-key"
+               hint={t('The one devices use to connect, not the admin password. If it does not match the real one, the code will not connect.')}>
           <input id="share-key" type="text" value={key} onChange={(e) => setKey(e.target.value)}
-                 autoComplete="off" maxLength={63} placeholder="min. 8 characters" />
+                 autoComplete="off" maxLength={63} placeholder={t('min. 8 characters')} />
         </Field>
       </div>
     </Modal>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import './feedback.css';
+import { t } from '../i18n';
 
 /**
  * Dialog on top of the native <dialog>: focus trap, Esc and backdrop for free.
@@ -36,7 +37,7 @@ export function Modal({ open, onClose, title, children, footer, wide, locked }: 
         <div className="modal-inner">
           <header className="modal-head">
             <h2>{title}</h2>
-            <button className="icon-btn ghost" onClick={onClose} disabled={locked} aria-label="Close">
+            <button className="icon-btn ghost" onClick={onClose} disabled={locked} aria-label={t('Close')}>
               <X size={18} />
             </button>
           </header>

@@ -5,6 +5,7 @@
    =========================================================================== */
 import { getSession, notifySessionLost } from './ubus';
 import type { BoardInfo, SystemInfo } from './api';
+import { t } from '../i18n';
 
 const API_URL = '/cgi-bin/freedom-api.sh';
 
@@ -25,23 +26,23 @@ function strParams(p: Params): Record<string, string> {
 // The CGI answers a few validation errors with terse codes; expand those.
 // Anything else is already a plain English sentence and is shown as-is.
 const ERRORS: Record<string, string> = {
-  'bad mac': 'Invalid MAC address.',
-  'bad ip': 'Invalid IP address.',
-  'bad netmask': 'Invalid netmask.',
-  'bad range': 'Invalid range.',
-  'bad speed': 'Invalid speed.',
-  'bad node_id': 'Invalid node.',
-  'bad ssid chars': 'The network name cannot contain quotes, \\, $ or `.',
-  'ssid too long': 'The network name can be at most 32 characters.',
-  'key too short (min 8)': 'The WiFi password needs at least 8 characters.',
-  'key too long (max 63)': 'The WiFi password can be at most 63 characters.',
-  'bad key chars': 'The WiFi password cannot contain quotes, \\, $ or `.',
-  'bad channel': 'Invalid channel.',
-  'bad leasetime': 'Invalid lease time.',
-  'password too short (min 8)': 'The password needs at least 8 characters.',
-  'bad password chars': 'The password cannot contain quotes, \\, $ or `.',
-  'passwd failed': 'Could not change the password.',
-  'bad proto': 'Invalid connection type.',
+  'bad mac': t('Invalid MAC address.'),
+  'bad ip': t('Invalid IP address.'),
+  'bad netmask': t('Invalid netmask.'),
+  'bad range': t('Invalid range.'),
+  'bad speed': t('Invalid speed.'),
+  'bad node_id': t('Invalid node.'),
+  'bad ssid chars': t('The network name cannot contain quotes, \\, $ or `.'),
+  'ssid too long': t('The network name can be at most 32 characters.'),
+  'key too short (min 8)': t('The WiFi password needs at least 8 characters.'),
+  'key too long (max 63)': t('The WiFi password can be at most 63 characters.'),
+  'bad key chars': t('The WiFi password cannot contain quotes, \\, $ or `.'),
+  'bad channel': t('Invalid channel.'),
+  'bad leasetime': t('Invalid lease time.'),
+  'password too short (min 8)': t('The password needs at least 8 characters.'),
+  'bad password chars': t('The password cannot contain quotes, \\, $ or `.'),
+  'passwd failed': t('Could not change the password.'),
+  'bad proto': t('Invalid connection type.'),
 };
 
 async function post<T = any>(action: string, params: Params = {}): Promise<T> {
@@ -53,13 +54,13 @@ async function post<T = any>(action: string, params: Params = {}): Promise<T> {
       body: JSON.stringify({ token: getSession(), action, ...strParams(params) }),
     });
   } catch {
-    throw new MeshApiError('No connection to the router.');
+    throw new MeshApiError(t('No connection to the router.'));
   }
   let json: any = {};
   try { json = await res.json(); } catch { /* non-JSON */ }
   if (res.status === 401) {
     notifySessionLost();
-    throw new MeshApiError('Session expired, please sign in again.');
+    throw new MeshApiError(t('Session expired, please sign in again.'));
   }
   if (!res.ok || !json.ok) {
     const e = String(json.error || `Error ${res.status}`);
@@ -117,7 +118,7 @@ export function ispBrand(i: IspInfo): string {
   if (ISP_BRANDS[i.asn]) return ISP_BRANDS[i.asn];
   const label = i.domain?.split('.')[0];
   if (label) return label.charAt(0).toUpperCase() + label.slice(1);
-  return i.isp || i.org || 'Unknown';
+  return i.isp || i.org || t('Unknown');
 }
 
 /** MAC(upper) -> DHCP hostname the router remembered (kept across reboots). */
@@ -162,10 +163,10 @@ export const removeNode = (nodeId: string) => post('remove_node', { node_id: nod
 
 export interface NodeSync { id: string; result: SyncResult; }
 export const SYNC_TEXT: Record<SyncResult, string> = {
-  ok: 'synced',
-  reboot: 'rebooting to apply the WiFi (~1 min)',
-  offline: 'did not respond',
-  error: 'rejected the sync',
+  ok: t('synced'),
+  reboot: t('rebooting to apply the WiFi (~1 min)'),
+  offline: t('did not respond'),
+  error: t('rejected the sync'),
 };
 export const syncNodes = async () => (await post<{ results: NodeSync[] }>('sync_nodes')).results ?? [];
 

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { login as ubusLogin, logout as ubusLogout, isAuthenticated, touchSession, onSessionLost } from './lib/ubus';
 import { useToast } from './components/Toast';
+import { t } from './i18n';
 
 interface AuthCtx {
   authed: boolean;
@@ -22,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     onSessionLost(() => {
       setAuthed(false);
-      if (!quiet.current) toast.info('Your session expired. Please sign in again.');
+      if (!quiet.current) toast.info(t('Your session expired. Please sign in again.'));
     });
     return () => onSessionLost(null);
   }, [toast]);
@@ -30,11 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Keep the ubus session alive (token expires in 300s) and detect drops.
   useEffect(() => {
     if (!authed) return;
-    const t = setInterval(async () => {
+    const timer = setInterval(async () => {
       const ok = await touchSession();
       if (!ok) setAuthed(false);
     }, 120_000);
-    return () => clearInterval(t);
+    return () => clearInterval(timer);
   }, [authed]);
 
   const login = useCallback(async (user: string, pass: string) => {
